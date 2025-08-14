@@ -50,9 +50,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   app.use('/uploads', express.static(uploadDir));
   
-  // Get all content (mixed feed)
+  // Get all content (mixed feed) with proper caching
   app.get("/api/content", async (req, res) => {
     try {
+      res.header('Cache-Control', 'public, max-age=60'); // Cache for 1 minute
       const content = await storage.getAllContent();
       res.json(content);
     } catch (error) {
@@ -63,6 +64,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get videos only
   app.get("/api/videos", async (req, res) => {
     try {
+      res.header('Cache-Control', 'public, max-age=30');
       const videos = await storage.getVideos();
       res.json(videos);
     } catch (error) {
@@ -73,6 +75,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get shorts only
   app.get("/api/shorts", async (req, res) => {
     try {
+      res.header('Cache-Control', 'public, max-age=30');
       const shorts = await storage.getShorts();
       res.json(shorts);
     } catch (error) {
@@ -83,6 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get photos only
   app.get("/api/photos", async (req, res) => {
     try {
+      res.header('Cache-Control', 'public, max-age=30');
       const photos = await storage.getPhotos();
       res.json(photos);
     } catch (error) {

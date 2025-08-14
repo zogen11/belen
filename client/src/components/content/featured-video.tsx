@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/contexts/auth-context";
 import type { Video } from "@shared/schema";
 
 interface FeaturedVideoProps {
@@ -12,7 +13,10 @@ interface FeaturedVideoProps {
 
 export default function FeaturedVideo({ video }: FeaturedVideoProps) {
   const [hasViewed, setHasViewed] = useState(false);
+  const { user } = useAuth();
   const queryClient = useQueryClient();
+  
+  const isOwner = user && user.id === video.userId;
 
   const incrementViewMutation = useMutation({
     mutationFn: () => apiRequest("POST", `/api/videos/${video.id}/view`),
@@ -100,10 +104,12 @@ export default function FeaturedVideo({ video }: FeaturedVideoProps) {
             <Share className="w-4 h-4" />
             <span>Share</span>
           </div>
-          <div className="flex items-center space-x-2 text-belen-green">
-            <DollarSign className="w-4 h-4" />
-            <span>{formatEarnings(video.earnings || 0)}</span>
-          </div>
+          {isOwner && (
+            <div className="flex items-center space-x-2 text-belen-green">
+              <DollarSign className="w-4 h-4" />
+              <span>{formatEarnings(video.earnings || 0)}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/contexts/auth-context";
 import type { Shorts } from "@shared/schema";
 
 interface ShortsCardProps {
@@ -12,7 +13,10 @@ interface ShortsCardProps {
 
 export default function ShortsCard({ shorts }: ShortsCardProps) {
   const [hasViewed, setHasViewed] = useState(false);
+  const { user } = useAuth();
   const queryClient = useQueryClient();
+  
+  const isOwner = user && user.id === shorts.userId;
 
   const incrementViewMutation = useMutation({
     mutationFn: () => apiRequest("POST", `/api/shorts/${shorts.id}/view`),
@@ -62,10 +66,12 @@ export default function ShortsCard({ shorts }: ShortsCardProps) {
             <Eye className="w-3 h-3" />
             <span>{(shorts.views || 0).toLocaleString()} views</span>
           </div>
-          <div className="flex items-center space-x-1 text-belen-green">
-            <DollarSign className="w-3 h-3" />
-            <span>{formatEarnings(shorts.earnings || 0)}</span>
-          </div>
+          {isOwner && (
+            <div className="flex items-center space-x-1 text-belen-green">
+              <DollarSign className="w-3 h-3" />
+              <span>{formatEarnings(shorts.earnings || 0)}</span>
+            </div>
+          )}
         </div>
       </div>
     </Card>

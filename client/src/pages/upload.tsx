@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertVideoSchema, insertShortsSchema, insertPhotoSchema } from "@shared/schema";
 import { z } from "zod";
+import CameraInterface from "@/components/camera/camera-interface";
 
 type UploadType = "video" | "shorts" | "photo";
 
@@ -30,6 +31,7 @@ type UploadFormData = z.infer<typeof uploadFormSchema>;
 export default function Upload() {
   const [selectedType, setSelectedType] = useState<UploadType>("video");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showCamera, setShowCamera] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -150,6 +152,15 @@ export default function Upload() {
     },
   ];
 
+  if (showCamera) {
+    return (
+      <CameraInterface 
+        onClose={() => setShowCamera(false)}
+        contentType={selectedType === 'shorts' ? 'short' : selectedType}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -214,11 +225,22 @@ export default function Upload() {
               ) : (
                 <>
                   <CloudUpload className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-lg font-medium text-gray-700 mb-2">Choose your {selectedType} file</p>
-                  <p className="text-gray-500 mb-4">Select from your device gallery or files</p>
+                  <p className="text-lg font-medium text-gray-700 mb-2">Create or Upload {selectedType}</p>
+                  <p className="text-gray-500 mb-4">Open camera to create or select from files</p>
                   <div className="space-y-3">
+                    <Button 
+                      onClick={() => setShowCamera(true)}
+                      className="bg-red-500 text-white hover:bg-red-600 w-full sm:w-auto text-lg py-6"
+                    >
+                      📹 Open BeLen Camera
+                    </Button>
+                    
+                    <div className="text-center">
+                      <span className="text-gray-400 text-sm">OR</span>
+                    </div>
+                    
                     <label htmlFor="file-upload">
-                      <Button className="bg-belen-orange text-white hover:bg-orange-600 w-full sm:w-auto">
+                      <Button variant="outline" className="w-full sm:w-auto">
                         📁 Browse Files
                       </Button>
                       <input
@@ -229,66 +251,6 @@ export default function Upload() {
                         onChange={handleFileSelect}
                       />
                     </label>
-                    
-                    {selectedType === "photo" && (
-                      <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                        <label htmlFor="camera-upload">
-                          <Button variant="outline" className="w-full sm:w-auto">
-                            📷 Take Photo
-                          </Button>
-                          <input
-                            id="camera-upload"
-                            type="file"
-                            className="hidden"
-                            accept="image/*"
-                            capture="environment"
-                            onChange={handleFileSelect}
-                          />
-                        </label>
-                        <label htmlFor="gallery-upload">
-                          <Button variant="outline" className="w-full sm:w-auto">
-                            🖼️ Gallery
-                          </Button>
-                          <input
-                            id="gallery-upload"
-                            type="file"
-                            className="hidden"
-                            accept="image/*"
-                            onChange={handleFileSelect}
-                          />
-                        </label>
-                      </div>
-                    )}
-                    
-                    {(selectedType === "video" || selectedType === "shorts") && (
-                      <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                        <label htmlFor="camera-video-upload">
-                          <Button variant="outline" className="w-full sm:w-auto">
-                            🎥 Record Video
-                          </Button>
-                          <input
-                            id="camera-video-upload"
-                            type="file"
-                            className="hidden"
-                            accept="video/*"
-                            capture="environment"
-                            onChange={handleFileSelect}
-                          />
-                        </label>
-                        <label htmlFor="gallery-video-upload">
-                          <Button variant="outline" className="w-full sm:w-auto">
-                            📹 Video Gallery
-                          </Button>
-                          <input
-                            id="gallery-video-upload"
-                            type="file"
-                            className="hidden"
-                            accept="video/*"
-                            onChange={handleFileSelect}
-                          />
-                        </label>
-                      </div>
-                    )}
                   </div>
                 </>
               )}

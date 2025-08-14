@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/auth-context";
+import { useLocation } from "wouter";
 import type { Video } from "@shared/schema";
 
 interface FeaturedVideoProps {
@@ -14,6 +15,7 @@ interface FeaturedVideoProps {
 export default function FeaturedVideo({ video }: FeaturedVideoProps) {
   const [hasViewed, setHasViewed] = useState(false);
   const { user } = useAuth();
+  const [, navigate] = useLocation();
   const queryClient = useQueryClient();
   
   const isOwner = user && user.id === video.userId;
@@ -31,6 +33,8 @@ export default function FeaturedVideo({ video }: FeaturedVideoProps) {
       setHasViewed(true);
       incrementViewMutation.mutate();
     }
+    // Navigate to video player
+    navigate(`/video/${video.id}`);
   };
 
   const formatDuration = (seconds: number) => {

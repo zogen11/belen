@@ -8,6 +8,7 @@ import Home from "@/pages/home";
 import Upload from "@/pages/upload";
 import Earnings from "@/pages/earnings";
 import Profile from "@/pages/profile";
+import VideoWatch from "@/pages/video-watch";
 
 function Router() {
   return (
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/upload" component={Upload} />
       <Route path="/earnings" component={Earnings} />
       <Route path="/profile" component={Profile} />
+      <Route path="/video/:id" component={VideoWatch} />
       <Route component={NotFound} />
     </Switch>
   );

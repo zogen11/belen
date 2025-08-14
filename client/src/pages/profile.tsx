@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Edit, Settings, Camera, Video, Clock, Heart, Eye, DollarSign } from "lucide-react";
 import Header from "@/components/layout/header";
 import MobileNav from "@/components/layout/mobile-nav";
@@ -11,72 +12,49 @@ import ShortsCard from "@/components/content/shorts-card";
 import PhotoCard from "@/components/content/photo-card";
 
 export default function Profile() {
-  // Mock user data
-  const mockUser = {
-    id: "1",
-    username: "CreativeUser",
-    followers: 245000,
-    following: 1250,
-    totalEarnings: 324785, // in cents
-    bio: "Digital creator passionate about travel, photography, and storytelling. Join me on my adventures!",
-    joinDate: "March 2023",
+  const currentUserId = "default-user"; // TODO: Get from auth
+
+  // Fetch real content data
+  const { data: videos = [], isLoading: videosLoading } = useQuery({
+    queryKey: ['/api/videos'],
+  });
+
+  const { data: shorts = [], isLoading: shortsLoading } = useQuery({
+    queryKey: ['/api/shorts'],
+  });
+
+  const { data: photos = [], isLoading: photosLoading } = useQuery({
+    queryKey: ['/api/photos'],
+  });
+
+  // Filter content for current user
+  const userVideos = videos.filter((video: any) => video.userId === currentUserId);
+  const userShorts = shorts.filter((short: any) => short.userId === currentUserId);
+  const userPhotos = photos.filter((photo: any) => photo.userId === currentUserId);
+
+  // Calculate real stats
+  const totalViews = [...userVideos, ...userShorts].reduce((sum: number, item: any) => sum + (item.views || 0), 0);
+  const totalLikes = userPhotos.reduce((sum: number, photo: any) => sum + (photo.likes || 0), 0);
+  const totalEarnings = [...userVideos, ...userShorts, ...userPhotos].reduce((sum: number, item: any) => sum + (item.earnings || 0), 0);
+
+  // User data
+  const user = {
+    id: currentUserId,
+    username: "Your Profile",
+    followers: 1250,
+    following: 89,
+    totalEarnings: totalEarnings,
+    bio: "Content creator sharing amazing videos, shorts, and photos!",
+    joinDate: "August 2025",
   };
 
-  const mockStats = {
-    totalVideos: 45,
-    totalShorts: 23,
-    totalPhotos: 78,
-    totalViews: 1247892,
-    totalLikes: 98432,
+  const stats = {
+    totalVideos: userVideos.length,
+    totalShorts: userShorts.length,
+    totalPhotos: userPhotos.length,
+    totalViews: totalViews,
+    totalLikes: totalLikes,
   };
-
-  // Mock content data
-  const mockVideos = [
-    {
-      id: "1",
-      title: "Amazing Mountain Adventure",
-      thumbnailUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400",
-      views: 45230,
-      earnings: 4523,
-      duration: 900,
-    },
-    {
-      id: "2", 
-      title: "Urban Photography Tips",
-      thumbnailUrl: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400",
-      views: 23450,
-      earnings: 2345,
-      duration: 525,
-    },
-  ];
-
-  const mockShorts = [
-    {
-      id: "1",
-      title: "Quick Dance Tutorial",
-      thumbnailUrl: "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400",
-      views: 126700,
-      earnings: 12670,
-      duration: 45,
-    },
-  ];
-
-  const mockPhotos = [
-    {
-      id: "1",
-      title: "Sunset Mountain View",
-      imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400",
-      likes: 15200,
-      earnings: 7600,
-    },
-    {
-      id: "2",
-      title: "City Street Photography", 
-      imageUrl: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400",
-      likes: 9800,
-      earnings: 4900,
-    },
-  ];
 
   const formatEarnings = (cents: number) => {
     return `$${(cents / 100).toFixed(2)}`;
@@ -93,9 +71,9 @@ export default function Profile() {
             <div className="flex flex-col md:flex-row items-start md:items-center space-y-6 md:space-y-0 md:space-x-8">
               {/* Avatar */}
               <div className="relative">
-                <div className="w-32 h-32 bg-gradient-to-br from-belen-orange to-belen-blue rounded-full flex items-center justify-center">
+                <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
                   <span className="text-white text-4xl font-bold">
-                    {mockUser.username.charAt(0)}
+                    {user.username.charAt(0)}
                   </span>
                 </div>
                 <Button
@@ -111,12 +89,12 @@ export default function Profile() {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
                   <div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                      {mockUser.username}
+                      {user.username}
                     </h1>
                     <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-3">
-                      <span>{mockUser.followers.toLocaleString()} followers</span>
-                      <span>{mockUser.following.toLocaleString()} following</span>
-                      <span>Joined {mockUser.joinDate}</span>
+                      <span>{user.followers.toLocaleString()} followers</span>
+                      <span>{user.following.toLocaleString()} following</span>
+                      <span>Joined {user.joinDate}</span>
                     </div>
                   </div>
                   <div className="flex space-x-3">
@@ -130,37 +108,37 @@ export default function Profile() {
                   </div>
                 </div>
 
-                <p className="text-gray-700 mb-4 max-w-2xl">{mockUser.bio}</p>
+                <p className="text-gray-700 mb-4 max-w-2xl">{user.bio}</p>
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
-                    <p className="text-2xl font-bold text-belen-green">
-                      {formatEarnings(mockUser.totalEarnings)}
+                    <p className="text-2xl font-bold text-green-600">
+                      {formatEarnings(user.totalEarnings)}
                     </p>
                     <p className="text-sm text-gray-600">Total Earnings</p>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <p className="text-2xl font-bold text-gray-900">
-                      {mockStats.totalViews.toLocaleString()}
+                      {stats.totalViews.toLocaleString()}
                     </p>
                     <p className="text-sm text-gray-600">Total Views</p>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <p className="text-2xl font-bold text-gray-900">
-                      {mockStats.totalLikes.toLocaleString()}
+                      {stats.totalLikes.toLocaleString()}
                     </p>
                     <p className="text-sm text-gray-600">Total Likes</p>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <p className="text-2xl font-bold text-gray-900">
-                      {mockStats.totalVideos + mockStats.totalShorts}
+                      {stats.totalVideos + stats.totalShorts}
                     </p>
                     <p className="text-sm text-gray-600">Videos</p>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
                     <p className="text-2xl font-bold text-gray-900">
-                      {mockStats.totalPhotos}
+                      {stats.totalPhotos}
                     </p>
                     <p className="text-sm text-gray-600">Photos</p>
                   </div>
@@ -176,22 +154,21 @@ export default function Profile() {
             <TabsTrigger value="all">All Content</TabsTrigger>
             <TabsTrigger value="videos">
               <Video className="w-4 h-4 mr-2" />
-              Videos ({mockStats.totalVideos})
+              Videos ({stats.totalVideos})
             </TabsTrigger>
             <TabsTrigger value="shorts">
               <Clock className="w-4 h-4 mr-2" />
-              Shorts ({mockStats.totalShorts})
+              Shorts ({stats.totalShorts})
             </TabsTrigger>
             <TabsTrigger value="photos">
               <Camera className="w-4 h-4 mr-2" />
-              Photos ({mockStats.totalPhotos})
+              Photos ({stats.totalPhotos})
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="all">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {/* Mock mixed content */}
-              {mockVideos.map((video) => (
+              {userVideos.map((video: any) => (
                 <div key={`video-${video.id}`} className="bg-white rounded-lg shadow-sm overflow-hidden">
                   <div className="relative aspect-video">
                     <img src={video.thumbnailUrl} alt={video.title} className="w-full h-full object-cover" />
@@ -201,87 +178,103 @@ export default function Profile() {
                     <h3 className="font-medium text-sm mb-1">{video.title}</h3>
                     <div className="flex justify-between text-xs text-gray-500">
                       <span>{video.views.toLocaleString()} views</span>
-                      <span className="text-belen-green">{formatEarnings(video.earnings)}</span>
+                      <span className="text-green-600">{formatEarnings(video.earnings)}</span>
                     </div>
                   </div>
                 </div>
               ))}
               
-              {mockShorts.map((short) => (
+              {userShorts.map((short: any) => (
                 <div key={`short-${short.id}`} className="bg-white rounded-lg shadow-sm overflow-hidden">
                   <div className="relative aspect-[9/16] max-h-60">
-                    <img src={short.thumbnailUrl} alt={short.title} className="w-full h-full object-cover" />
+                    <video src={short.videoUrl} className="w-full h-full object-cover" />
                     <Badge className="absolute top-2 left-2 bg-purple-600 text-white">SHORT</Badge>
                   </div>
                   <div className="p-3">
                     <h3 className="font-medium text-sm mb-1">{short.title}</h3>
                     <div className="flex justify-between text-xs text-gray-500">
                       <span>{short.views.toLocaleString()} views</span>
-                      <span className="text-belen-green">{formatEarnings(short.earnings)}</span>
+                      <span className="text-green-600">{formatEarnings(short.earnings)}</span>
                     </div>
                   </div>
                 </div>
               ))}
 
-              {mockPhotos.map((photo) => (
+              {userPhotos.map((photo: any) => (
                 <div key={`photo-${photo.id}`} className="bg-white rounded-lg shadow-sm overflow-hidden">
                   <div className="relative aspect-square">
                     <img src={photo.imageUrl} alt={photo.title} className="w-full h-full object-cover" />
-                    <Badge className="absolute top-2 left-2 bg-belen-blue text-white">PHOTO</Badge>
+                    <Badge className="absolute top-2 left-2 bg-blue-600 text-white">PHOTO</Badge>
                   </div>
                   <div className="p-3">
                     <h3 className="font-medium text-sm mb-1">{photo.title}</h3>
                     <div className="flex justify-between text-xs text-gray-500">
                       <span>{photo.likes.toLocaleString()} likes</span>
-                      <span className="text-belen-green">{formatEarnings(photo.earnings)}</span>
+                      <span className="text-green-600">{formatEarnings(photo.earnings)}</span>
                     </div>
                   </div>
                 </div>
               ))}
+              
+              {(userVideos.length === 0 && userShorts.length === 0 && userPhotos.length === 0) && (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-gray-500">No content uploaded yet. Start creating!</p>
+                </div>
+              )}
             </div>
           </TabsContent>
 
           <TabsContent value="videos">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {mockVideos.map((video) => (
+              {userVideos.map((video: any) => (
                 <div key={video.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
                   <div className="relative aspect-video">
-                    <img src={video.thumbnailUrl} alt={video.title} className="w-full h-full object-cover" />
+                    <video src={video.videoUrl} className="w-full h-full object-cover" controls />
                   </div>
                   <div className="p-3">
                     <h3 className="font-medium text-sm mb-1">{video.title}</h3>
                     <div className="flex justify-between text-xs text-gray-500">
                       <span>{video.views.toLocaleString()} views</span>
-                      <span className="text-belen-green">{formatEarnings(video.earnings)}</span>
+                      <span className="text-green-600">{formatEarnings(video.earnings)}</span>
                     </div>
                   </div>
                 </div>
               ))}
+              {userVideos.length === 0 && (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-gray-500">No videos uploaded yet.</p>
+                </div>
+              )}
             </div>
           </TabsContent>
 
           <TabsContent value="shorts">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-              {mockShorts.map((short) => (
+              {userShorts.map((short: any) => (
                 <div key={short.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
                   <div className="relative aspect-[9/16]">
-                    <img src={short.thumbnailUrl} alt={short.title} className="w-full h-full object-cover" />
+                    <video src={short.videoUrl} className="w-full h-full object-cover" controls />
                   </div>
                   <div className="p-3">
                     <h3 className="font-medium text-sm mb-1">{short.title}</h3>
                     <div className="flex justify-between text-xs text-gray-500">
                       <span>{short.views.toLocaleString()} views</span>
-                      <span className="text-belen-green">{formatEarnings(short.earnings)}</span>
+                      <span className="text-green-600">{formatEarnings(short.earnings)}</span>
                     </div>
                   </div>
                 </div>
               ))}
+              {userShorts.length === 0 && (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-gray-500">No shorts uploaded yet.</p>
+                </div>
+              )}
             </div>
           </TabsContent>
 
           <TabsContent value="photos">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {mockPhotos.map((photo) => (
+              {userPhotos.map((photo: any) => (
                 <div key={photo.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
                   <div className="relative aspect-square">
                     <img src={photo.imageUrl} alt={photo.title} className="w-full h-full object-cover" />
@@ -290,11 +283,16 @@ export default function Profile() {
                     <h3 className="font-medium text-sm mb-1">{photo.title}</h3>
                     <div className="flex justify-between text-xs text-gray-500">
                       <span>{photo.likes.toLocaleString()} likes</span>
-                      <span className="text-belen-green">{formatEarnings(photo.earnings)}</span>
+                      <span className="text-green-600">{formatEarnings(photo.earnings)}</span>
                     </div>
                   </div>
                 </div>
               ))}
+              {userPhotos.length === 0 && (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-gray-500">No photos uploaded yet.</p>
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>

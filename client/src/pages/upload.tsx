@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -35,6 +35,33 @@ export default function Upload() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Check for recorded file from camera on component mount
+  useEffect(() => {
+    const recordedFileData = sessionStorage.getItem('recordedFile');
+    if (recordedFileData) {
+      try {
+        const { name, type, data, contentType } = JSON.parse(recordedFileData);
+        
+        // Convert base64 data back to File
+        fetch(data)
+          .then(res => res.blob())
+          .then(blob => {
+            const file = new File([blob], name, { type });
+            setSelectedFile(file);
+            setSelectedType(contentType as UploadType);
+          })
+          .catch(error => {
+            console.error('Error converting recorded file:', error);
+          });
+        
+        // Clear from sessionStorage
+        sessionStorage.removeItem('recordedFile');
+      } catch (error) {
+        console.error('Error loading recorded file:', error);
+      }
+    }
+  }, []);
+
   const form = useForm<UploadFormData>({
     resolver: zodResolver(uploadFormSchema),
     defaultValues: {
@@ -47,37 +74,33 @@ export default function Upload() {
 
   const uploadMutation = useMutation({
     mutationFn: async (data: UploadFormData & { file: File; type: UploadType }) => {
-      // Mock file upload - in a real app, you'd upload to a file storage service
-      const mockUrl = URL.createObjectURL(data.file);
-      
-      const basePayload = {
-        userId: "mock-user-id", // In a real app, this would come from auth
-        title: data.title,
-        description: data.description || "",
-        tags: data.tags ? data.tags.split(",").map(tag => tag.trim()) : [],
-        isMonetized: data.isMonetized,
-      };
+      const formData = new FormData();
+      formData.append('file', data.file);
+      formData.append('userId', 'default-user'); // TODO: Get from auth
+      formData.append('title', data.title);
+      formData.append('description', data.description || '');
+      formData.append('tags', JSON.stringify(data.tags ? data.tags.split(',').map(tag => tag.trim()) : []));
+      formData.append('isMonetized', data.isMonetized.toString());
 
+      // Add type-specific fields
       if (data.type === "video") {
-        return apiRequest("POST", "/api/videos", {
-          ...basePayload,
-          thumbnailUrl: mockUrl,
-          videoUrl: mockUrl,
-          duration: 300, // Mock 5 minutes
-        });
+        formData.append('duration', '300'); // Mock 5 minutes
       } else if (data.type === "shorts") {
-        return apiRequest("POST", "/api/shorts", {
-          ...basePayload,
-          thumbnailUrl: mockUrl,
-          videoUrl: mockUrl,
-          duration: 45, // Mock 45 seconds
-        });
-      } else {
-        return apiRequest("POST", "/api/photos", {
-          ...basePayload,
-          imageUrl: mockUrl,
-        });
+        formData.append('duration', '45'); // Mock 45 seconds
       }
+
+      // Use fetch instead of apiRequest for FormData
+      const response = await fetch(`/api/${data.type === 'photo' ? 'photos' : data.type === 'shorts' ? 'shorts' : 'videos'}`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Upload failed');
+      }
+
+      return response.json();
     },
     onSuccess: () => {
       toast({

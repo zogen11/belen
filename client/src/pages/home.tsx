@@ -53,12 +53,16 @@ export default function Home() {
   };
 
   const renderContentCard = (item: Video | Shorts | Photo) => {
-    if ("duration" in item && item.duration <= 60) {
+    // Check if it's a short by checking if it has thumbnailUrl AND videoUrl (shorts structure)
+    // and duration <= 60 seconds
+    if ("videoUrl" in item && "thumbnailUrl" in item && (item as any).duration <= 60) {
       return <ShortsCard key={item.id} shorts={item as Shorts} />;
     } else if ("duration" in item) {
       return <VideoCard key={item.id} video={item as Video} />;
-    } else {
+    } else if ("imageUrl" in item) {
       return <PhotoCard key={item.id} photo={item as Photo} />;
+    } else {
+      return <ShortsCard key={item.id} shorts={item as Shorts} />;
     }
   };
 

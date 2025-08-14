@@ -26,7 +26,16 @@ export default function ShortsCard({ shorts }: ShortsCardProps) {
     }
   });
 
-  const handlePlay = () => {
+  const handlePlay = (e: React.MouseEvent) => {
+    const video = e.currentTarget.querySelector('video') as HTMLVideoElement;
+    if (video) {
+      if (video.paused) {
+        video.play();
+      } else {
+        video.pause();
+      }
+    }
+    
     if (!hasViewed) {
       setHasViewed(true);
       incrementViewMutation.mutate();
@@ -44,10 +53,13 @@ export default function ShortsCard({ shorts }: ShortsCardProps) {
   return (
     <Card className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
       <div className="relative aspect-[9/16] max-h-80 group cursor-pointer" onClick={handlePlay}>
-        <img
-          src={shorts.thumbnailUrl}
-          alt={shorts.title}
+        <video
+          src={shorts.videoUrl}
+          poster={shorts.thumbnailUrl}
           className="w-full h-full object-cover"
+          muted
+          loop
+          preload="metadata"
         />
         <Badge className="absolute top-2 left-2 bg-red-600 text-white text-xs font-medium">
           SHORT

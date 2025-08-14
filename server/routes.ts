@@ -83,6 +83,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get individual short
+  app.get("/api/shorts/:id", async (req, res) => {
+    try {
+      const short = await storage.getShortsItem(req.params.id);
+      if (!short) {
+        return res.status(404).json({ error: "Short not found" });
+      }
+      res.json(short);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch short" });
+    }
+  });
+
   // Get photos only
   app.get("/api/photos", async (req, res) => {
     try {

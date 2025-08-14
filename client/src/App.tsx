@@ -9,6 +9,7 @@ import Upload from "@/pages/upload";
 import Earnings from "@/pages/earnings";
 import Profile from "@/pages/profile";
 import VideoWatch from "@/pages/video-watch";
+import ShortsWatch from "@/pages/shorts-watch";
 
 function Router() {
   return (
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/earnings" component={Earnings} />
       <Route path="/profile" component={Profile} />
       <Route path="/video/:id" component={VideoWatch} />
+      <Route path="/shorts/:id" component={ShortsWatch} />
       <Route component={NotFound} />
     </Switch>
   );

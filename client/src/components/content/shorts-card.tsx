@@ -26,20 +26,13 @@ export default function ShortsCard({ shorts }: ShortsCardProps) {
     }
   });
 
-  const handlePlay = (e: React.MouseEvent) => {
-    const video = e.currentTarget.querySelector('video') as HTMLVideoElement;
-    if (video) {
-      if (video.paused) {
-        video.play();
-      } else {
-        video.pause();
-      }
-    }
-    
+  const handlePlay = () => {
     if (!hasViewed) {
       setHasViewed(true);
       incrementViewMutation.mutate();
     }
+    // Navigate to shorts player
+    window.location.href = `/shorts/${shorts.id}`;
   };
 
   const formatDuration = (seconds: number) => {
@@ -60,6 +53,8 @@ export default function ShortsCard({ shorts }: ShortsCardProps) {
           muted
           loop
           preload="metadata"
+          onMouseEnter={(e) => e.currentTarget.play()}
+          onMouseLeave={(e) => e.currentTarget.pause()}
         />
         <Badge className="absolute top-2 left-2 bg-red-600 text-white text-xs font-medium">
           SHORT

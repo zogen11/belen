@@ -61,11 +61,11 @@ export default function VideoCard({ video }: VideoCardProps) {
         <div className="flex items-center justify-between text-xs text-gray-500">
           <div className="flex items-center space-x-1">
             <Eye className="w-3 h-3" />
-            <span>{video.views.toLocaleString()} views</span>
+            <span>{(video.views || 0).toLocaleString()} views</span>
           </div>
           <div className="flex items-center space-x-1 text-belen-green">
             <DollarSign className="w-3 h-3" />
-            <span>{formatEarnings(video.earnings)}</span>
+            <span>{formatEarnings(video.earnings || 0)}</span>
           </div>
         </div>
       </div>

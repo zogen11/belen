@@ -54,6 +54,116 @@ export class MemStorage implements IStorage {
     this.videos = new Map();
     this.shorts = new Map();
     this.photos = new Map();
+    
+    // Initialize with sample data
+    this.initializeSampleData();
+  }
+
+  private async initializeSampleData() {
+    // Create sample users
+    const user1 = await this.createUser({
+      username: "CreativeExplorer",
+      password: "password123"
+    });
+    
+    const user2 = await this.createUser({
+      username: "TechReviewer", 
+      password: "password123"
+    });
+
+    // Update followers for trending
+    user1.followers = 125000;
+    user2.followers = 89000;
+    this.users.set(user1.id, user1);
+    this.users.set(user2.id, user2);
+
+    // Create sample videos
+    await this.createVideo({
+      userId: user1.id,
+      title: "Amazing Mountain Adventure",
+      description: "Join me on this incredible journey through the mountains",
+      thumbnailUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400",
+      videoUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400",
+      duration: 900,
+      tags: ["adventure", "mountains", "travel"],
+      isMonetized: true
+    });
+
+    await this.createVideo({
+      userId: user2.id,
+      title: "Best Camera Setup for Content Creation",
+      description: "Complete guide to camera setup for beginners",
+      thumbnailUrl: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400",
+      videoUrl: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400",
+      duration: 720,
+      tags: ["tech", "camera", "tutorial"],
+      isMonetized: true
+    });
+
+    // Create sample shorts
+    await this.createShorts({
+      userId: user1.id,
+      title: "Quick Travel Tip",
+      description: "Pack light, travel smart!",
+      thumbnailUrl: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400",
+      videoUrl: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400", 
+      duration: 30,
+      tags: ["travel", "tips"],
+      isMonetized: true
+    });
+
+    await this.createShorts({
+      userId: user2.id,
+      title: "30-Second Tech Review",
+      description: "Latest gadget in 30 seconds",
+      thumbnailUrl: "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400",
+      videoUrl: "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400",
+      duration: 28,
+      tags: ["tech", "review"],
+      isMonetized: true
+    });
+
+    // Create sample photos
+    await this.createPhoto({
+      userId: user1.id,
+      title: "Golden Hour Landscape",
+      description: "Perfect sunset captured at the right moment",
+      imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400",
+      tags: ["landscape", "sunset", "photography"],
+      isMonetized: true
+    });
+
+    await this.createPhoto({
+      userId: user2.id,
+      title: "Urban Architecture",
+      description: "Modern city design and structures",
+      imageUrl: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400",
+      tags: ["architecture", "city", "modern"],
+      isMonetized: true
+    });
+
+    // Add some views and likes to simulate activity
+    const videos = Array.from(this.videos.values());
+    const shorts = Array.from(this.shorts.values());
+    const photos = Array.from(this.photos.values());
+
+    for (const video of videos) {
+      for (let i = 0; i < Math.floor(Math.random() * 50000) + 10000; i++) {
+        await this.incrementVideoViews(video.id);
+      }
+    }
+
+    for (const short of shorts) {
+      for (let i = 0; i < Math.floor(Math.random() * 100000) + 20000; i++) {
+        await this.incrementShortsViews(short.id);
+      }
+    }
+
+    for (const photo of photos) {
+      for (let i = 0; i < Math.floor(Math.random() * 20000) + 5000; i++) {
+        await this.incrementPhotoLikes(photo.id);
+      }
+    }
   }
 
   // User methods
@@ -84,7 +194,7 @@ export class MemStorage implements IStorage {
   async updateUserEarnings(userId: string, earnings: number): Promise<void> {
     const user = this.users.get(userId);
     if (user) {
-      user.totalEarnings += earnings;
+      user.totalEarnings = (user.totalEarnings || 0) + earnings;
       this.users.set(userId, user);
     }
   }
@@ -111,7 +221,10 @@ export class MemStorage implements IStorage {
       id, 
       views: 0, 
       earnings: 0,
-      createdAt: new Date()
+      createdAt: new Date(),
+      description: insertVideo.description || null,
+      tags: insertVideo.tags || null,
+      isMonetized: insertVideo.isMonetized ?? true
     };
     this.videos.set(id, video);
     return video;
@@ -120,8 +233,8 @@ export class MemStorage implements IStorage {
   async incrementVideoViews(id: string): Promise<void> {
     const video = this.videos.get(id);
     if (video && video.isMonetized) {
-      video.views += 1;
-      video.earnings += 0.1; // $0.001 per view in cents
+      video.views = (video.views || 0) + 1;
+      video.earnings = (video.earnings || 0) + 0.1; // $0.001 per view in cents
       this.videos.set(id, video);
       await this.updateUserEarnings(video.userId, 0.1);
     }
@@ -149,7 +262,10 @@ export class MemStorage implements IStorage {
       id, 
       views: 0, 
       earnings: 0,
-      createdAt: new Date()
+      createdAt: new Date(),
+      description: insertShorts.description || null,
+      tags: insertShorts.tags || null,
+      isMonetized: insertShorts.isMonetized ?? true
     };
     this.shorts.set(id, shorts);
     return shorts;
@@ -158,8 +274,8 @@ export class MemStorage implements IStorage {
   async incrementShortsViews(id: string): Promise<void> {
     const shorts = this.shorts.get(id);
     if (shorts && shorts.isMonetized) {
-      shorts.views += 1;
-      shorts.earnings += 0.1; // $0.001 per view in cents
+      shorts.views = (shorts.views || 0) + 1;
+      shorts.earnings = (shorts.earnings || 0) + 0.1; // $0.001 per view in cents
       this.shorts.set(id, shorts);
       await this.updateUserEarnings(shorts.userId, 0.1);
     }
@@ -187,7 +303,10 @@ export class MemStorage implements IStorage {
       id, 
       likes: 0, 
       earnings: 0,
-      createdAt: new Date()
+      createdAt: new Date(),
+      description: insertPhoto.description || null,
+      tags: insertPhoto.tags || null,
+      isMonetized: insertPhoto.isMonetized ?? true
     };
     this.photos.set(id, photo);
     return photo;
@@ -196,8 +315,8 @@ export class MemStorage implements IStorage {
   async incrementPhotoLikes(id: string): Promise<void> {
     const photo = this.photos.get(id);
     if (photo && photo.isMonetized) {
-      photo.likes += 1;
-      photo.earnings += 0.5; // $0.005 per like in cents
+      photo.likes = (photo.likes || 0) + 1;
+      photo.earnings = (photo.earnings || 0) + 0.5; // $0.005 per like in cents
       this.photos.set(id, photo);
       await this.updateUserEarnings(photo.userId, 0.5);
     }
@@ -217,7 +336,7 @@ export class MemStorage implements IStorage {
 
   async getTrendingCreators(): Promise<User[]> {
     return Array.from(this.users.values())
-      .sort((a, b) => b.followers - a.followers)
+      .sort((a, b) => (b.followers || 0) - (a.followers || 0))
       .slice(0, 5);
   }
 }

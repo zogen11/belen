@@ -56,11 +56,11 @@ export default function PhotoCard({ photo }: PhotoCardProps) {
             className={`flex items-center space-x-1 ${hasLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
           >
             <Heart className={`w-3 h-3 ${hasLiked ? 'fill-current' : ''}`} />
-            <span>{photo.likes.toLocaleString()} likes</span>
+            <span>{(photo.likes || 0).toLocaleString()} likes</span>
           </button>
           <div className="flex items-center space-x-1 text-belen-green">
             <DollarSign className="w-3 h-3" />
-            <span>{formatEarnings(photo.earnings)}</span>
+            <span>{formatEarnings(photo.earnings || 0)}</span>
           </div>
         </div>
       </div>

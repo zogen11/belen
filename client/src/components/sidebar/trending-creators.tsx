@@ -42,7 +42,7 @@ export default function TrendingCreators() {
             <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
             <div className="flex-1">
               <p className="font-medium text-gray-900">{creator.username}</p>
-              <p className="text-sm text-gray-500">{creator.followers.toLocaleString()} followers</p>
+              <p className="text-sm text-gray-500">{(creator.followers || 0).toLocaleString()} followers</p>
             </div>
             <Button variant="ghost" className="text-belen-orange text-sm font-medium">
               Follow

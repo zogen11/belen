@@ -155,9 +155,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const shorts = await storage.getShortsByUser(id);
       const photos = await storage.getPhotosByUser(id);
 
-      const videoEarnings = videos.reduce((sum, video) => sum + video.earnings, 0);
-      const shortsEarnings = shorts.reduce((sum, short) => sum + short.earnings, 0);
-      const photoEarnings = photos.reduce((sum, photo) => sum + photo.earnings, 0);
+      const videoEarnings = videos.reduce((sum, video) => sum + (video.earnings || 0), 0);
+      const shortsEarnings = shorts.reduce((sum, short) => sum + (short.earnings || 0), 0);
+      const photoEarnings = photos.reduce((sum, photo) => sum + (photo.earnings || 0), 0);
 
       res.json({
         total: user.totalEarnings,

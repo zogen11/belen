@@ -60,11 +60,11 @@ export default function ShortsCard({ shorts }: ShortsCardProps) {
         <div className="flex items-center justify-between text-xs text-gray-500">
           <div className="flex items-center space-x-1">
             <Eye className="w-3 h-3" />
-            <span>{shorts.views.toLocaleString()} views</span>
+            <span>{(shorts.views || 0).toLocaleString()} views</span>
           </div>
           <div className="flex items-center space-x-1 text-belen-green">
             <DollarSign className="w-3 h-3" />
-            <span>{formatEarnings(shorts.earnings)}</span>
+            <span>{formatEarnings(shorts.earnings || 0)}</span>
           </div>
         </div>
       </div>

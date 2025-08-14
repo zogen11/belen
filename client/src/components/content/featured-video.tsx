@@ -90,7 +90,7 @@ export default function FeaturedVideo({ video }: FeaturedVideoProps) {
         <div className="flex items-center space-x-6 text-gray-600">
           <div className="flex items-center space-x-2">
             <Eye className="w-4 h-4" />
-            <span>{video.views.toLocaleString()} views</span>
+            <span>{(video.views || 0).toLocaleString()} views</span>
           </div>
           <div className="flex items-center space-x-2">
             <ThumbsUp className="w-4 h-4" />
@@ -102,7 +102,7 @@ export default function FeaturedVideo({ video }: FeaturedVideoProps) {
           </div>
           <div className="flex items-center space-x-2 text-belen-green">
             <DollarSign className="w-4 h-4" />
-            <span>{formatEarnings(video.earnings)}</span>
+            <span>{formatEarnings(video.earnings || 0)}</span>
           </div>
         </div>
       </div>

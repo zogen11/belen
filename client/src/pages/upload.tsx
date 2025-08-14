@@ -193,24 +193,103 @@ export default function Upload() {
                     </Button>
                   </div>
                   <p className="text-gray-500">File size: {(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                  {/* Preview */}
+                  <div className="mt-4">
+                    {selectedType === "photo" && (
+                      <img 
+                        src={URL.createObjectURL(selectedFile)} 
+                        alt="Preview" 
+                        className="max-h-32 mx-auto rounded-lg"
+                      />
+                    )}
+                    {(selectedType === "video" || selectedType === "shorts") && (
+                      <video 
+                        src={URL.createObjectURL(selectedFile)} 
+                        className="max-h-32 mx-auto rounded-lg"
+                        controls
+                      />
+                    )}
+                  </div>
                 </div>
               ) : (
                 <>
                   <CloudUpload className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-lg font-medium text-gray-700 mb-2">Drag and drop your files here</p>
-                  <p className="text-gray-500 mb-4">or click to browse</p>
-                  <label htmlFor="file-upload">
-                    <Button className="bg-belen-orange text-white hover:bg-orange-600">
-                      Choose Files
-                    </Button>
-                    <input
-                      id="file-upload"
-                      type="file"
-                      className="hidden"
-                      accept={uploadTypes.find(t => t.type === selectedType)?.accept}
-                      onChange={handleFileSelect}
-                    />
-                  </label>
+                  <p className="text-lg font-medium text-gray-700 mb-2">Choose your {selectedType} file</p>
+                  <p className="text-gray-500 mb-4">Select from your device gallery or files</p>
+                  <div className="space-y-3">
+                    <label htmlFor="file-upload">
+                      <Button className="bg-belen-orange text-white hover:bg-orange-600 w-full sm:w-auto">
+                        📁 Browse Files
+                      </Button>
+                      <input
+                        id="file-upload"
+                        type="file"
+                        className="hidden"
+                        accept={uploadTypes.find(t => t.type === selectedType)?.accept}
+                        onChange={handleFileSelect}
+                      />
+                    </label>
+                    
+                    {selectedType === "photo" && (
+                      <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                        <label htmlFor="camera-upload">
+                          <Button variant="outline" className="w-full sm:w-auto">
+                            📷 Take Photo
+                          </Button>
+                          <input
+                            id="camera-upload"
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                            capture="environment"
+                            onChange={handleFileSelect}
+                          />
+                        </label>
+                        <label htmlFor="gallery-upload">
+                          <Button variant="outline" className="w-full sm:w-auto">
+                            🖼️ Gallery
+                          </Button>
+                          <input
+                            id="gallery-upload"
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleFileSelect}
+                          />
+                        </label>
+                      </div>
+                    )}
+                    
+                    {(selectedType === "video" || selectedType === "shorts") && (
+                      <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                        <label htmlFor="camera-video-upload">
+                          <Button variant="outline" className="w-full sm:w-auto">
+                            🎥 Record Video
+                          </Button>
+                          <input
+                            id="camera-video-upload"
+                            type="file"
+                            className="hidden"
+                            accept="video/*"
+                            capture="environment"
+                            onChange={handleFileSelect}
+                          />
+                        </label>
+                        <label htmlFor="gallery-video-upload">
+                          <Button variant="outline" className="w-full sm:w-auto">
+                            📹 Video Gallery
+                          </Button>
+                          <input
+                            id="gallery-video-upload"
+                            type="file"
+                            className="hidden"
+                            accept="video/*"
+                            onChange={handleFileSelect}
+                          />
+                        </label>
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
             </div>

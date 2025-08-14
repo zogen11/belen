@@ -142,6 +142,18 @@ export class MemStorage implements IStorage {
       isMonetized: true
     });
 
+    // Add the user's uploaded content
+    await this.createShorts({
+      userId: "default-user",
+      title: "Funny😂",
+      description: "",
+      thumbnailUrl: "/uploads/1755146661324-5dcd6827-2deb-4877-a912-f2e48355732e.mp4",
+      videoUrl: "/uploads/1755146661324-5dcd6827-2deb-4877-a912-f2e48355732e.mp4",
+      duration: 45,
+      tags: [],
+      isMonetized: true
+    });
+
     // Add some views and likes to simulate activity
     const videos = Array.from(this.videos.values());
     const shorts = Array.from(this.shorts.values());

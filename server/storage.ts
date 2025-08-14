@@ -154,27 +154,28 @@ export class MemStorage implements IStorage {
       isMonetized: true
     });
 
-    // Add some views and likes to simulate activity
+    // Add some views and likes to simulate activity (reduced for performance)
     const videos = Array.from(this.videos.values());
     const shorts = Array.from(this.shorts.values());
     const photos = Array.from(this.photos.values());
 
+    // Optimize server startup by setting view counts directly instead of loops
     for (const video of videos) {
-      for (let i = 0; i < Math.floor(Math.random() * 50000) + 10000; i++) {
-        await this.incrementVideoViews(video.id);
-      }
+      const randomViews = Math.floor(Math.random() * 50000) + 10000;
+      video.views = randomViews;
+      video.earnings = randomViews * 0.1; // 10 cents per 100 views
     }
 
     for (const short of shorts) {
-      for (let i = 0; i < Math.floor(Math.random() * 100000) + 20000; i++) {
-        await this.incrementShortsViews(short.id);
-      }
+      const randomViews = Math.floor(Math.random() * 100000) + 20000;
+      short.views = randomViews;
+      short.earnings = randomViews * 0.1; // 10 cents per 100 views
     }
 
     for (const photo of photos) {
-      for (let i = 0; i < Math.floor(Math.random() * 20000) + 5000; i++) {
-        await this.incrementPhotoLikes(photo.id);
-      }
+      const randomLikes = Math.floor(Math.random() * 20000) + 5000;
+      photo.likes = randomLikes;
+      photo.earnings = randomLikes * 0.5; // 50 cents per 100 likes
     }
   }
 

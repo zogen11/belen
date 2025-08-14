@@ -65,7 +65,7 @@ export default function VideoCard({ video }: VideoCardProps) {
         <h3 className="font-medium text-gray-900 mb-1 line-clamp-2">
           {video.title}
         </h3>
-        <p className="text-sm text-gray-600 mb-2">Creator Name</p>
+        <p className="text-sm text-gray-600 mb-2">Creator • 1.2M followers</p>
         <div className="flex items-center justify-between text-xs text-gray-500">
           <div className="flex items-center space-x-1">
             <Eye className="w-3 h-3" />

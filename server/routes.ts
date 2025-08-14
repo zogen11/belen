@@ -237,6 +237,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Like/Unlike shorts
+  app.post("/api/shorts/:id/like", async (req, res) => {
+    try {
+      await storage.incrementShortsViews(req.params.id); // For now, treat likes as views
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to like shorts" });
+    }
+  });
+
+  // Follow/Unfollow user
+  app.post("/api/users/:id/follow", async (req, res) => {
+    try {
+      // For now, just return success - would implement proper follow logic
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to follow user" });
+    }
+  });
+
   // Get user content
   app.get("/api/users/:id/content", async (req, res) => {
     try {

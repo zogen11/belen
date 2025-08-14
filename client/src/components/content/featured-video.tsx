@@ -86,11 +86,11 @@ export default function FeaturedVideo({ video }: FeaturedVideoProps) {
             <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
             <div>
               <p className="font-medium text-gray-900">Creator Name</p>
-              <p className="text-sm text-gray-500">2.4M subscribers</p>
+              <p className="text-sm text-gray-500">2.4M followers</p>
             </div>
           </div>
-          <Button className="bg-belen-orange text-white px-6 py-2 rounded-lg font-medium hover:bg-orange-600 transition-colors">
-            Subscribe
+          <Button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+            Follow
           </Button>
         </div>
 

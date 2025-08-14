@@ -32,6 +32,7 @@ export default function Upload() {
   const [selectedType, setSelectedType] = useState<UploadType>("video");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showCamera, setShowCamera] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -49,9 +50,18 @@ export default function Upload() {
             const file = new File([blob], name, { type });
             setSelectedFile(file);
             setSelectedType(contentType as UploadType);
+            toast({
+              title: "Camera Recording Loaded",
+              description: `${name} is ready to upload`,
+            });
           })
           .catch(error => {
             console.error('Error converting recorded file:', error);
+            toast({
+              title: "Error",
+              description: "Failed to load recorded file",
+              variant: "destructive",
+            });
           });
         
         // Clear from sessionStorage
@@ -60,7 +70,7 @@ export default function Upload() {
         console.error('Error loading recorded file:', error);
       }
     }
-  }, []);
+  }, [toast]);
 
   const form = useForm<UploadFormData>({
     resolver: zodResolver(uploadFormSchema),
@@ -123,7 +133,64 @@ export default function Upload() {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setSelectedFile(file);
+      // Validate file type
+      const currentUploadType = uploadTypes.find(t => t.type === selectedType);
+      if (currentUploadType && file.type.startsWith(currentUploadType.accept.split('/')[0])) {
+        setSelectedFile(file);
+        toast({
+          title: "File Selected",
+          description: `${file.name} is ready to upload`,
+        });
+      } else {
+        toast({
+          title: "Invalid File Type",
+          description: `Please select a ${selectedType === 'photo' ? 'image' : 'video'} file`,
+          variant: "destructive",
+        });
+      }
+    }
+    // Reset the input value to allow selecting the same file again
+    event.target.value = '';
+  };
+
+  const triggerFileSelect = () => {
+    const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      const file = files[0];
+      const currentUploadType = uploadTypes.find(t => t.type === selectedType);
+      if (currentUploadType && file.type.startsWith(currentUploadType.accept.split('/')[0])) {
+        setSelectedFile(file);
+        toast({
+          title: "File Dropped",
+          description: `${file.name} is ready to upload`,
+        });
+      } else {
+        toast({
+          title: "Invalid File Type",
+          description: `Please drop a ${selectedType === 'photo' ? 'image' : 'video'} file`,
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -217,7 +284,16 @@ export default function Upload() {
             </div>
 
             {/* File Upload Area */}
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <div 
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                isDragOver 
+                  ? 'border-blue-400 bg-blue-50' 
+                  : 'border-gray-300 hover:border-gray-400'
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
               {selectedFile ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-center space-x-2">
@@ -247,9 +323,13 @@ export default function Upload() {
                 </div>
               ) : (
                 <>
-                  <CloudUpload className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-lg font-medium text-gray-700 mb-2">Create or Upload {selectedType}</p>
-                  <p className="text-gray-500 mb-4">Open camera to create or select from files</p>
+                  <CloudUpload className={`h-16 w-16 mx-auto mb-4 ${isDragOver ? 'text-blue-500' : 'text-gray-400'}`} />
+                  <p className="text-lg font-medium text-gray-700 mb-2">
+                    {isDragOver ? `Drop your ${selectedType} here` : `Create or Upload ${selectedType}`}
+                  </p>
+                  <p className="text-gray-500 mb-4">
+                    {isDragOver ? 'Release to upload' : 'Open camera to create, browse files, or drag & drop'}
+                  </p>
                   <div className="space-y-3">
                     <Button 
                       onClick={() => setShowCamera(true)}
@@ -262,8 +342,13 @@ export default function Upload() {
                       <span className="text-gray-400 text-sm">OR</span>
                     </div>
                     
-                    <label htmlFor="file-upload">
-                      <Button variant="outline" className="w-full sm:w-auto">
+                    <div>
+                      <Button 
+                        variant="outline" 
+                        className="w-full sm:w-auto"
+                        onClick={triggerFileSelect}
+                        type="button"
+                      >
                         📁 Browse Files
                       </Button>
                       <input
@@ -272,8 +357,9 @@ export default function Upload() {
                         className="hidden"
                         accept={uploadTypes.find(t => t.type === selectedType)?.accept}
                         onChange={handleFileSelect}
+                        multiple={false}
                       />
-                    </label>
+                    </div>
                   </div>
                 </>
               )}

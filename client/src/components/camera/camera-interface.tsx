@@ -78,11 +78,27 @@ export default function CameraInterface({ onClose, contentType }: CameraInterfac
         type: contentType === 'photo' ? 'image/jpeg' : 'video/mp4' 
       });
       
-      // Here you would handle the recorded media
-      console.log('Recording completed:', blob);
+      // Create a File from the blob
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const fileName = `recorded-${contentType}-${timestamp}.${contentType === 'photo' ? 'jpg' : 'mp4'}`;
+      const file = new File([blob], fileName, { type: blob.type });
       
-      // Navigate back to upload page with the recorded file
-      navigate('/upload');
+      // Store the recorded file in sessionStorage temporarily
+      const fileReader = new FileReader();
+      fileReader.onload = () => {
+        sessionStorage.setItem('recordedFile', JSON.stringify({
+          name: fileName,
+          type: blob.type,
+          data: fileReader.result,
+          contentType: contentType
+        }));
+        console.log('Recording completed:', blob);
+        
+        // Navigate back to upload page
+        onClose();
+        navigate('/upload');
+      };
+      fileReader.readAsDataURL(blob);
     };
 
     mediaRecorderRef.current = mediaRecorder;
@@ -123,6 +139,35 @@ export default function CameraInterface({ onClose, contentType }: CameraInterfac
     canvas.height = video.videoHeight;
     
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    ctx.drawImage(video, 0, 0);
+    
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      
+      // Create a File from the blob
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const fileName = `photo-${timestamp}.jpg`;
+      const file = new File([blob], fileName, { type: 'image/jpeg' });
+      
+      // Store the photo file in sessionStorage temporarily
+      const fileReader = new FileReader();
+      fileReader.onload = () => {
+        sessionStorage.setItem('recordedFile', JSON.stringify({
+          name: fileName,
+          type: 'image/jpeg',
+          data: fileReader.result,
+          contentType: 'photo'
+        }));
+        console.log('Photo taken:', blob);
+        
+        // Navigate back to upload page
+        onClose();
+        navigate('/upload');
+      };
+      fileReader.readAsDataURL(blob);
+    }, 'image/jpeg', 0.9);
     if (ctx) {
       ctx.drawImage(video, 0, 0);
       canvas.toBlob((blob) => {

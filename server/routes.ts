@@ -1,10 +1,54 @@
 import type { Express } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertVideoSchema, insertShortsSchema, insertPhotoSchema } from "@shared/schema";
 import { z } from "zod";
+import multer from "multer";
+import { randomUUID } from "crypto";
+import path from "path";
+import fs from "fs";
+
+// Configure multer for file uploads
+const uploadDir = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage_multer = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `${Date.now()}-${randomUUID()}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({ 
+  storage: storage_multer,
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/mpeg', 'video/quicktime', 'video/x-msvideo'];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type'));
+    }
+  }
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Serve uploaded files statically
+  app.use('/uploads', (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+  });
+  app.use('/uploads', express.static(uploadDir));
   
   // Get all content (mixed feed)
   app.get("/api/content", async (req, res) => {
@@ -46,10 +90,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create video
-  app.post("/api/videos", async (req, res) => {
+  // Upload and create video
+  app.post("/api/videos", upload.single('file'), async (req, res) => {
     try {
-      const validatedData = insertVideoSchema.parse(req.body);
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const fileUrl = `/uploads/${req.file.filename}`;
+      const duration = parseInt(req.body.duration) || 300; // Default 5 minutes
+      
+      const videoData = {
+        userId: req.body.userId || "default-user", // TODO: Get from auth
+        title: req.body.title,
+        description: req.body.description || "",
+        thumbnailUrl: fileUrl, // Use same file as thumbnail for now
+        videoUrl: fileUrl,
+        duration,
+        tags: req.body.tags ? JSON.parse(req.body.tags) : [],
+        isMonetized: req.body.isMonetized === 'true'
+      };
+
+      const validatedData = insertVideoSchema.parse(videoData);
       const video = await storage.createVideo(validatedData);
       res.status(201).json(video);
     } catch (error) {
@@ -61,13 +123,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create shorts
-  app.post("/api/shorts", async (req, res) => {
+  // Upload and create shorts
+  app.post("/api/shorts", upload.single('file'), async (req, res) => {
     try {
-      const validatedData = insertShortsSchema.parse(req.body);
-      if (validatedData.duration > 60) {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const fileUrl = `/uploads/${req.file.filename}`;
+      const duration = parseInt(req.body.duration) || 45; // Default 45 seconds
+      
+      if (duration > 60) {
         return res.status(400).json({ error: "Shorts must be 60 seconds or less" });
       }
+
+      const shortsData = {
+        userId: req.body.userId || "default-user", // TODO: Get from auth
+        title: req.body.title,
+        description: req.body.description || "",
+        thumbnailUrl: fileUrl, // Use same file as thumbnail for now
+        videoUrl: fileUrl,
+        duration,
+        tags: req.body.tags ? JSON.parse(req.body.tags) : [],
+        isMonetized: req.body.isMonetized === 'true'
+      };
+
+      const validatedData = insertShortsSchema.parse(shortsData);
       const shorts = await storage.createShorts(validatedData);
       res.status(201).json(shorts);
     } catch (error) {
@@ -79,10 +160,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create photo
-  app.post("/api/photos", async (req, res) => {
+  // Upload and create photo
+  app.post("/api/photos", upload.single('file'), async (req, res) => {
     try {
-      const validatedData = insertPhotoSchema.parse(req.body);
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const fileUrl = `/uploads/${req.file.filename}`;
+      
+      const photoData = {
+        userId: req.body.userId || "default-user", // TODO: Get from auth
+        title: req.body.title,
+        description: req.body.description || "",
+        imageUrl: fileUrl,
+        tags: req.body.tags ? JSON.parse(req.body.tags) : [],
+        isMonetized: req.body.isMonetized === 'true'
+      };
+
+      const validatedData = insertPhotoSchema.parse(photoData);
       const photo = await storage.createPhoto(validatedData);
       res.status(201).json(photo);
     } catch (error) {

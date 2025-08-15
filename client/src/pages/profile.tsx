@@ -216,15 +216,51 @@ export default function Profile() {
 
                 {/* Action Buttons */}
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" data-testid="button-switch-account">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    data-testid="button-switch-account"
+                    onClick={() => {
+                      toast({
+                        title: "Switch Account",
+                        description: "Log in to a different BeLen account",
+                      });
+                      // Sign out current user and redirect to login
+                      window.location.href = '/login';
+                    }}
+                  >
                     Switch account
                   </Button>
-                  <Button variant="outline" size="sm" data-testid="button-google-account">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    data-testid="button-google-account"
+                    onClick={() => {
+                      toast({
+                        title: "Account Settings",
+                        description: "Manage your BeLen account settings",
+                      });
+                      // Navigate to account settings
+                      window.location.href = '/settings';
+                    }}
+                  >
                     <Settings className="w-4 h-4 mr-2" />
-                    Google Account
+                    Account Settings
                   </Button>
-                  <Button variant="outline" size="sm" data-testid="button-incognito">
-                    Turn on Incognito
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    data-testid="button-incognito"
+                    onClick={() => {
+                      toast({
+                        title: "Private Mode",
+                        description: "Browse BeLen without saving your activity",
+                      });
+                      // Toggle private browsing mode
+                      localStorage.setItem('incognito-mode', 'true');
+                    }}
+                  >
+                    Turn on Private
                   </Button>
                 </div>
               </div>
@@ -236,14 +272,31 @@ export default function Profile() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-gray-900" data-testid="text-history-title">History</h2>
-                <Button variant="ghost" size="sm" className="text-blue-600" data-testid="button-view-all-history">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-blue-600" 
+                  data-testid="button-view-all-history"
+                  onClick={() => window.location.href = '/history'}
+                >
                   View all
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {/* Recent watch history items */}
                 {[...userVideos, ...userShorts].slice(0, 4).map((item: any, index) => (
-                  <div key={`history-${item.id}-${index}`} className="group cursor-pointer" data-testid={`card-history-${item.id}`}>
+                  <div 
+                    key={`history-${item.id}-${index}`} 
+                    className="group cursor-pointer" 
+                    data-testid={`card-history-${item.id}`}
+                    onClick={() => {
+                      if (item.videoUrl) {
+                        window.location.href = `/watch/video/${item.id}`;
+                      } else {
+                        window.location.href = `/watch/shorts/${item.id}`;
+                      }
+                    }}
+                  >
                     <div className="relative aspect-video rounded-lg overflow-hidden mb-2">
                       <img 
                         src={item.thumbnailUrl || '/api/placeholder/300/180'} 
@@ -264,6 +317,13 @@ export default function Profile() {
                     </p>
                   </div>
                 ))}
+                {[...userVideos, ...userShorts].length === 0 && (
+                  <div className="col-span-full text-center py-8">
+                    <History className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-gray-500">No watch history yet</p>
+                    <p className="text-sm text-gray-400">Videos and shorts you watch will appear here</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -281,7 +341,18 @@ export default function Profile() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Watch Later */}
-                <div className="group cursor-pointer" data-testid="card-watch-later">
+                <div 
+                  className="group cursor-pointer" 
+                  data-testid="card-watch-later"
+                  onClick={() => {
+                    toast({
+                      title: "Watch Later",
+                      description: "Your saved content for later viewing",
+                    });
+                    // Navigate to watch later page
+                    window.location.href = '/watch-later';
+                  }}
+                >
                   <div className="relative aspect-video rounded-lg overflow-hidden mb-3 bg-gray-100">
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="relative">
@@ -309,7 +380,18 @@ export default function Profile() {
                 </div>
 
                 {/* Liked Content */}
-                <div className="group cursor-pointer" data-testid="card-liked-content">
+                <div 
+                  className="group cursor-pointer" 
+                  data-testid="card-liked-content"
+                  onClick={() => {
+                    toast({
+                      title: "Liked Content",
+                      description: `${stats.totalLikes} liked items in your collection`,
+                    });
+                    // Navigate to liked content page
+                    window.location.href = '/liked';
+                  }}
+                >
                   <div className="relative aspect-video rounded-lg overflow-hidden mb-3 bg-red-50">
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="relative">
@@ -327,7 +409,7 @@ export default function Profile() {
                           </div>
                         </div>
                         <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded" data-testid="text-liked-content-count">
-                          {Math.min(29, stats.totalLikes)}
+                          {stats.totalLikes || 0}
                         </div>
                       </div>
                     </div>
@@ -337,7 +419,18 @@ export default function Profile() {
                 </div>
 
                 {/* Creator Analytics - Unique to BeLen */}
-                <div className="group cursor-pointer" data-testid="card-creator-analytics">
+                <div 
+                  className="group cursor-pointer" 
+                  data-testid="card-creator-analytics"
+                  onClick={() => {
+                    toast({
+                      title: "Creator Analytics",
+                      description: `Total earnings: $${(userData.totalEarnings || 0 / 100).toFixed(2)} | ${stats.totalViews} views`,
+                    });
+                    // Navigate to analytics dashboard
+                    window.location.href = '/analytics';
+                  }}
+                >
                   <div className="relative aspect-video rounded-lg overflow-hidden mb-3 bg-green-50">
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="bg-green-500/80 rounded-full p-3">
@@ -372,10 +465,23 @@ export default function Profile() {
             </Button>
 
             {/* Downloads - BeLen Feature */}
-            <Button variant="ghost" className="w-full justify-start text-left p-4 h-auto" data-testid="button-downloads">
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start text-left p-4 h-auto" 
+              data-testid="button-downloads"
+              onClick={() => {
+                toast({
+                  title: "Downloads",
+                  description: "Manage your downloaded content for offline viewing",
+                });
+                // Navigate to downloads page
+                window.location.href = '/downloads';
+              }}
+            >
               <Download className="w-5 h-5 mr-3" />
               <div className="flex-1">
                 <div className="font-medium">Downloads</div>
+                <div className="text-sm text-gray-500">Offline content storage</div>
               </div>
               <ChevronRight className="w-5 h-5" />
             </Button>
@@ -396,7 +502,19 @@ export default function Profile() {
             </Button>
 
             {/* Content Collections - BeLen Feature */}
-            <Button variant="ghost" className="w-full justify-start text-left p-4 h-auto" data-testid="button-content-collections">
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start text-left p-4 h-auto" 
+              data-testid="button-content-collections"
+              onClick={() => {
+                toast({
+                  title: "Content Collections",
+                  description: "Create and manage custom content collections",
+                });
+                // Navigate to collections page
+                window.location.href = '/collections';
+              }}
+            >
               <Bookmark className="w-5 h-5 mr-3" />
               <div className="flex-1">
                 <div className="font-medium">Content Collections</div>
@@ -406,7 +524,19 @@ export default function Profile() {
             </Button>
 
             {/* Creator Insights - Unique to BeLen */}
-            <Button variant="ghost" className="w-full justify-start text-left p-4 h-auto" data-testid="button-creator-insights">
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start text-left p-4 h-auto" 
+              data-testid="button-creator-insights"
+              onClick={() => {
+                toast({
+                  title: "Creator Insights",
+                  description: `View detailed analytics for ${stats.totalContent} pieces of content`,
+                });
+                // Navigate to insights dashboard
+                window.location.href = '/insights';
+              }}
+            >
               <TrendingUp className="w-5 h-5 mr-3" />
               <div className="flex-1">
                 <div className="font-medium">Creator Insights</div>

@@ -7,13 +7,31 @@ import {
   type InsertShorts, 
   type Photo, 
   type InsertPhoto,
+  type UserPreferences,
+  type InsertUserPreferences,
+  type Follow,
+  type InsertFollow,
+  type Comment,
+  type InsertComment,
+  type Like,
+  type InsertLike,
+  type WatchHistory,
+  type InsertWatchHistory,
+  type EarningsHistory,
+  type InsertEarningsHistory,
   users,
   videos,
   shorts,
-  photos
+  photos,
+  userPreferences,
+  follows,
+  comments,
+  likes,
+  watchHistory,
+  earningsHistory
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, count } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -50,6 +68,36 @@ export interface IStorage {
   // Content methods
   getAllContent(): Promise<(Video | Shorts | Photo)[]>;
   getTrendingCreators(): Promise<User[]>;
+  
+  // User preferences methods
+  getUserPreferences(userId: string): Promise<UserPreferences | undefined>;
+  createUserPreferences(preferences: InsertUserPreferences): Promise<UserPreferences>;
+  updateUserPreferences(userId: string, preferences: Partial<InsertUserPreferences>): Promise<void>;
+  
+  // Follow methods
+  followUser(followerId: string, followingId: string): Promise<Follow>;
+  unfollowUser(followerId: string, followingId: string): Promise<void>;
+  getFollowers(userId: string): Promise<User[]>;
+  getFollowing(userId: string): Promise<User[]>;
+  isFollowing(followerId: string, followingId: string): Promise<boolean>;
+  
+  // Comment methods
+  getComments(contentId: string, contentType: string): Promise<Comment[]>;
+  createComment(comment: InsertComment): Promise<Comment>;
+  likeComment(commentId: string): Promise<void>;
+  
+  // Like methods
+  likeContent(userId: string, contentId: string, contentType: string): Promise<Like>;
+  unlikeContent(userId: string, contentId: string, contentType: string): Promise<void>;
+  isContentLiked(userId: string, contentId: string, contentType: string): Promise<boolean>;
+  
+  // Watch history methods
+  addToWatchHistory(history: InsertWatchHistory): Promise<WatchHistory>;
+  getWatchHistory(userId: string): Promise<WatchHistory[]>;
+  
+  // Earnings methods
+  addEarnings(earnings: InsertEarningsHistory): Promise<EarningsHistory>;
+  getUserEarningsHistory(userId: string): Promise<EarningsHistory[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -228,6 +276,210 @@ export class DatabaseStorage implements IStorage {
 
   async getTrendingCreators(): Promise<User[]> {
     return await db.select().from(users).orderBy(desc(users.totalEarnings)).limit(10);
+  }
+
+  // User preferences methods
+  async getUserPreferences(userId: string): Promise<UserPreferences | undefined> {
+    const [preferences] = await db.select().from(userPreferences).where(eq(userPreferences.userId, userId));
+    return preferences || undefined;
+  }
+
+  async createUserPreferences(preferences: InsertUserPreferences): Promise<UserPreferences> {
+    const [newPreferences] = await db
+      .insert(userPreferences)
+      .values(preferences)
+      .returning();
+    return newPreferences;
+  }
+
+  async updateUserPreferences(userId: string, preferences: Partial<InsertUserPreferences>): Promise<void> {
+    await db
+      .update(userPreferences)
+      .set({ 
+        ...preferences,
+        updatedAt: new Date()
+      })
+      .where(eq(userPreferences.userId, userId));
+  }
+
+  // Follow methods
+  async followUser(followerId: string, followingId: string): Promise<Follow> {
+    const [follow] = await db
+      .insert(follows)
+      .values({ followerId, followingId })
+      .returning();
+      
+    // Update follower counts
+    await Promise.all([
+      db.update(users).set({ following: sql`${users.following} + 1` }).where(eq(users.id, followerId)),
+      db.update(users).set({ followers: sql`${users.followers} + 1` }).where(eq(users.id, followingId))
+    ]);
+    
+    return follow;
+  }
+
+  async unfollowUser(followerId: string, followingId: string): Promise<void> {
+    await db.delete(follows).where(
+      and(
+        eq(follows.followerId, followerId),
+        eq(follows.followingId, followingId)
+      )
+    );
+    
+    // Update follower counts
+    await Promise.all([
+      db.update(users).set({ following: sql`${users.following} - 1` }).where(eq(users.id, followerId)),
+      db.update(users).set({ followers: sql`${users.followers} - 1` }).where(eq(users.id, followingId))
+    ]);
+  }
+
+  async getFollowers(userId: string): Promise<User[]> {
+    const result = await db
+      .select({ user: users })
+      .from(follows)
+      .innerJoin(users, eq(follows.followerId, users.id))
+      .where(eq(follows.followingId, userId));
+    
+    return result.map(row => row.user);
+  }
+
+  async getFollowing(userId: string): Promise<User[]> {
+    const result = await db
+      .select({ user: users })
+      .from(follows)
+      .innerJoin(users, eq(follows.followingId, users.id))
+      .where(eq(follows.followerId, userId));
+    
+    return result.map(row => row.user);
+  }
+
+  async isFollowing(followerId: string, followingId: string): Promise<boolean> {
+    const result = await db
+      .select()
+      .from(follows)
+      .where(
+        and(
+          eq(follows.followerId, followerId),
+          eq(follows.followingId, followingId)
+        )
+      );
+    
+    return result.length > 0;
+  }
+
+  // Comment methods
+  async getComments(contentId: string, contentType: string): Promise<Comment[]> {
+    return await db
+      .select()
+      .from(comments)
+      .where(
+        and(
+          eq(comments.contentId, contentId),
+          eq(comments.contentType, contentType)
+        )
+      )
+      .orderBy(desc(comments.createdAt));
+  }
+
+  async createComment(comment: InsertComment): Promise<Comment> {
+    const [newComment] = await db
+      .insert(comments)
+      .values(comment)
+      .returning();
+    return newComment;
+  }
+
+  async likeComment(commentId: string): Promise<void> {
+    await db
+      .update(comments)
+      .set({ likes: sql`${comments.likes} + 1` })
+      .where(eq(comments.id, commentId));
+  }
+
+  // Like methods
+  async likeContent(userId: string, contentId: string, contentType: string): Promise<Like> {
+    const [like] = await db
+      .insert(likes)
+      .values({ userId, contentId, contentType })
+      .returning();
+    
+    // Update like count on content
+    if (contentType === 'photo') {
+      await db.update(photos).set({ likes: sql`${photos.likes} + 1` }).where(eq(photos.id, contentId));
+    }
+    
+    return like;
+  }
+
+  async unlikeContent(userId: string, contentId: string, contentType: string): Promise<void> {
+    await db.delete(likes).where(
+      and(
+        eq(likes.userId, userId),
+        eq(likes.contentId, contentId),
+        eq(likes.contentType, contentType)
+      )
+    );
+    
+    // Update like count on content
+    if (contentType === 'photo') {
+      await db.update(photos).set({ likes: sql`${photos.likes} - 1` }).where(eq(photos.id, contentId));
+    }
+  }
+
+  async isContentLiked(userId: string, contentId: string, contentType: string): Promise<boolean> {
+    const result = await db
+      .select()
+      .from(likes)
+      .where(
+        and(
+          eq(likes.userId, userId),
+          eq(likes.contentId, contentId),
+          eq(likes.contentType, contentType)
+        )
+      );
+    
+    return result.length > 0;
+  }
+
+  // Watch history methods
+  async addToWatchHistory(history: InsertWatchHistory): Promise<WatchHistory> {
+    const [watchRecord] = await db
+      .insert(watchHistory)
+      .values(history)
+      .returning();
+    return watchRecord;
+  }
+
+  async getWatchHistory(userId: string): Promise<WatchHistory[]> {
+    return await db
+      .select()
+      .from(watchHistory)
+      .where(eq(watchHistory.userId, userId))
+      .orderBy(desc(watchHistory.watchedAt));
+  }
+
+  // Earnings methods
+  async addEarnings(earnings: InsertEarningsHistory): Promise<EarningsHistory> {
+    const [earningsRecord] = await db
+      .insert(earningsHistory)
+      .values(earnings)
+      .returning();
+    
+    // Update user's total earnings
+    await db
+      .update(users)
+      .set({ totalEarnings: sql`${users.totalEarnings} + ${earnings.amount}` })
+      .where(eq(users.id, earnings.userId));
+    
+    return earningsRecord;
+  }
+
+  async getUserEarningsHistory(userId: string): Promise<EarningsHistory[]> {
+    return await db
+      .select()
+      .from(earningsHistory)
+      .where(eq(earningsHistory.userId, userId))
+      .orderBy(desc(earningsHistory.createdAt));
   }
 }
 
@@ -448,6 +700,84 @@ export class MemStorage implements IStorage {
     return Array.from(this.users.values())
       .sort((a, b) => (b.followers || 0) - (a.followers || 0))
       .slice(0, 5);
+  }
+
+  // User preferences methods (stub implementations for interface compliance)
+  async getUserPreferences(userId: string): Promise<UserPreferences | undefined> {
+    return undefined; // Not implemented in memory storage
+  }
+
+  async createUserPreferences(preferences: InsertUserPreferences): Promise<UserPreferences> {
+    throw new Error("User preferences not implemented in memory storage");
+  }
+
+  async updateUserPreferences(userId: string, preferences: Partial<InsertUserPreferences>): Promise<void> {
+    // Not implemented in memory storage
+  }
+
+  // Follow methods (stub implementations)
+  async followUser(followerId: string, followingId: string): Promise<Follow> {
+    throw new Error("Follow functionality not implemented in memory storage");
+  }
+
+  async unfollowUser(followerId: string, followingId: string): Promise<void> {
+    // Not implemented in memory storage
+  }
+
+  async getFollowers(userId: string): Promise<User[]> {
+    return [];
+  }
+
+  async getFollowing(userId: string): Promise<User[]> {
+    return [];
+  }
+
+  async isFollowing(followerId: string, followingId: string): Promise<boolean> {
+    return false;
+  }
+
+  // Comment methods (stub implementations)
+  async getComments(contentId: string, contentType: string): Promise<Comment[]> {
+    return [];
+  }
+
+  async createComment(comment: InsertComment): Promise<Comment> {
+    throw new Error("Comments not implemented in memory storage");
+  }
+
+  async likeComment(commentId: string): Promise<void> {
+    // Not implemented in memory storage
+  }
+
+  // Like methods (stub implementations)
+  async likeContent(userId: string, contentId: string, contentType: string): Promise<Like> {
+    throw new Error("Likes not implemented in memory storage");
+  }
+
+  async unlikeContent(userId: string, contentId: string, contentType: string): Promise<void> {
+    // Not implemented in memory storage
+  }
+
+  async isContentLiked(userId: string, contentId: string, contentType: string): Promise<boolean> {
+    return false;
+  }
+
+  // Watch history methods (stub implementations)
+  async addToWatchHistory(history: InsertWatchHistory): Promise<WatchHistory> {
+    throw new Error("Watch history not implemented in memory storage");
+  }
+
+  async getWatchHistory(userId: string): Promise<WatchHistory[]> {
+    return [];
+  }
+
+  // Earnings methods (stub implementations)
+  async addEarnings(earnings: InsertEarningsHistory): Promise<EarningsHistory> {
+    throw new Error("Earnings history not implemented in memory storage");
+  }
+
+  async getUserEarningsHistory(userId: string): Promise<EarningsHistory[]> {
+    return [];
   }
 }
 

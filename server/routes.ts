@@ -360,14 +360,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/users/:id/follow", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
+      const followerId = req.user!.id;
       
       // Cannot follow yourself
-      if (req.user!.id === id) {
+      if (followerId === id) {
         return res.status(400).json({ error: "Cannot follow yourself" });
       }
       
-      // For now, just return success - would implement proper follow logic
-      res.json({ success: true, message: "Follow functionality will be implemented soon" });
+      // Check if already following
+      const isFollowing = await storage.isFollowing(followerId, id);
+      if (isFollowing) {
+        await storage.unfollowUser(followerId, id);
+        res.json({ success: true, message: "Unfollowed successfully", following: false });
+      } else {
+        await storage.followUser(followerId, id);
+        res.json({ success: true, message: "Followed successfully", following: true });
+      }
     } catch (error) {
       console.error("Error following user:", error);
       res.status(500).json({ error: "Failed to follow user" });
@@ -436,6 +444,209 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(creators);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch trending creators" });
+    }
+  });
+
+  // User preferences routes
+  app.get("/api/users/:id/preferences", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Users can only access their own preferences
+      if (req.user!.id !== id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      let preferences = await storage.getUserPreferences(id);
+      
+      // Create default preferences if none exist
+      if (!preferences) {
+        preferences = await storage.createUserPreferences({ userId: id });
+      }
+      
+      res.json(preferences);
+    } catch (error) {
+      console.error("Error fetching user preferences:", error);
+      res.status(500).json({ error: "Failed to fetch user preferences" });
+    }
+  });
+
+  app.put("/api/users/:id/preferences", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Users can only update their own preferences
+      if (req.user!.id !== id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      await storage.updateUserPreferences(id, req.body);
+      res.json({ success: true, message: "Preferences updated successfully" });
+    } catch (error) {
+      console.error("Error updating user preferences:", error);
+      res.status(500).json({ error: "Failed to update user preferences" });
+    }
+  });
+
+  // Followers/Following routes
+  app.get("/api/users/:id/followers", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const followers = await storage.getFollowers(id);
+      res.json(followers);
+    } catch (error) {
+      console.error("Error fetching followers:", error);
+      res.status(500).json({ error: "Failed to fetch followers" });
+    }
+  });
+
+  app.get("/api/users/:id/following", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const following = await storage.getFollowing(id);
+      res.json(following);
+    } catch (error) {
+      console.error("Error fetching following:", error);
+      res.status(500).json({ error: "Failed to fetch following" });
+    }
+  });
+
+  app.get("/api/users/:id/is-following/:targetId", requireAuth, async (req, res) => {
+    try {
+      const { id, targetId } = req.params;
+      const isFollowing = await storage.isFollowing(id, targetId);
+      res.json({ isFollowing });
+    } catch (error) {
+      console.error("Error checking follow status:", error);
+      res.status(500).json({ error: "Failed to check follow status" });
+    }
+  });
+
+  // Comments routes
+  app.get("/api/content/:id/comments", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { type } = req.query;
+      
+      if (!type || !['video', 'shorts', 'photo'].includes(type as string)) {
+        return res.status(400).json({ error: "Valid content type required" });
+      }
+      
+      const comments = await storage.getComments(id, type as string);
+      res.json(comments);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+      res.status(500).json({ error: "Failed to fetch comments" });
+    }
+  });
+
+  app.post("/api/content/:id/comments", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { comment, contentType, parentCommentId } = req.body;
+      
+      if (!comment || !contentType) {
+        return res.status(400).json({ error: "Comment and content type are required" });
+      }
+      
+      const newComment = await storage.createComment({
+        userId: req.user!.id,
+        contentId: id,
+        contentType,
+        comment,
+        parentCommentId: parentCommentId || null
+      });
+      
+      res.status(201).json(newComment);
+    } catch (error) {
+      console.error("Error creating comment:", error);
+      res.status(500).json({ error: "Failed to create comment" });
+    }
+  });
+
+  // Like content routes
+  app.post("/api/content/:id/like", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { contentType } = req.body;
+      const userId = req.user!.id;
+      
+      if (!contentType || !['video', 'shorts', 'photo'].includes(contentType)) {
+        return res.status(400).json({ error: "Valid content type required" });
+      }
+      
+      const isLiked = await storage.isContentLiked(userId, id, contentType);
+      
+      if (isLiked) {
+        await storage.unlikeContent(userId, id, contentType);
+        res.json({ success: true, message: "Content unliked", liked: false });
+      } else {
+        await storage.likeContent(userId, id, contentType);
+        res.json({ success: true, message: "Content liked", liked: true });
+      }
+    } catch (error) {
+      console.error("Error liking content:", error);
+      res.status(500).json({ error: "Failed to like content" });
+    }
+  });
+
+  // Watch history routes
+  app.post("/api/watch-history", requireAuth, async (req, res) => {
+    try {
+      const { contentId, contentType, watchDuration, isCompleted } = req.body;
+      const userId = req.user!.id;
+      
+      if (!contentId || !contentType || !['video', 'shorts'].includes(contentType)) {
+        return res.status(400).json({ error: "Valid content ID and type required" });
+      }
+      
+      const watchRecord = await storage.addToWatchHistory({
+        userId,
+        contentId,
+        contentType,
+        watchDuration: watchDuration || 0,
+        isCompleted: isCompleted || false
+      });
+      
+      res.status(201).json(watchRecord);
+    } catch (error) {
+      console.error("Error adding to watch history:", error);
+      res.status(500).json({ error: "Failed to add to watch history" });
+    }
+  });
+
+  app.get("/api/users/:id/watch-history", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Users can only access their own watch history
+      if (req.user!.id !== id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const history = await storage.getWatchHistory(id);
+      res.json(history);
+    } catch (error) {
+      console.error("Error fetching watch history:", error);
+      res.status(500).json({ error: "Failed to fetch watch history" });
+    }
+  });
+
+  // Earnings history routes
+  app.get("/api/users/:id/earnings-history", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Users can only access their own earnings history
+      if (req.user!.id !== id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const history = await storage.getUserEarningsHistory(id);
+      res.json(history);
+    } catch (error) {
+      console.error("Error fetching earnings history:", error);
+      res.status(500).json({ error: "Failed to fetch earnings history" });
     }
   });
 

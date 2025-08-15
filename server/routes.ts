@@ -56,12 +56,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       conString: process.env.DATABASE_URL,
       createTableIfMissing: false, // Changed to false since table already exists
       tableName: 'sessions', // Use existing sessions table from schema
-      ttl: 24 * 60 * 60, // 24 hours in seconds
+      ttl: 7 * 24 * 60 * 60, // 7 days in seconds
     }),
     cookie: {
       secure: false, // set to true in production with HTTPS
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days instead of 1 day
+      sameSite: 'lax' // Better for cross-site requests
     }
   }));
 

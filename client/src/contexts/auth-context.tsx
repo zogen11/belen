@@ -26,12 +26,14 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const queryClient = useQueryClient();
 
-  const { data: user, isLoading } = useQuery<{ user: User } | null>({
+  const { data: userData, isLoading } = useQuery({
     queryKey: ['/api/auth/me'],
     retry: false,
-    staleTime: 1 * 60 * 1000, // 1 minute instead of 5 for quicker updates
-    refetchOnWindowFocus: true,
-    queryFn: async () => {
+    staleTime: 10 * 60 * 1000, // 10 minutes - much longer to avoid constant re-checking
+    refetchOnWindowFocus: false, // Don't refetch on focus to avoid interruptions
+    refetchOnMount: false, // Don't refetch on mount if we have cached data
+    gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
+    queryFn: async (): Promise<{ user: User } | null> => {
       const response = await fetch('/api/auth/me', {
         credentials: 'include',
       });
@@ -71,10 +73,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await logoutMutation.mutateAsync();
   };
 
-  const isAuthenticated = !!user?.user;
+  const user = userData?.user || null;
+  const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ user: user?.user || null, logout, isAuthenticated, isLoading }}>
+    <AuthContext.Provider value={{ user, logout, isAuthenticated, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

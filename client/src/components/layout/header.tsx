@@ -2,7 +2,6 @@ import { Link, useLocation } from "wouter";
 import { Search, Plus, Cast, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import belenLogo from "@assets/afed63ad-fb44-4e24-855a-f259f4f3029d_20250814_093911_0000_1755250067955.jpg";
 
 export default function Header() {
   const [location] = useLocation();
@@ -14,11 +13,9 @@ export default function Header() {
           {/* BeLen Logo */}
           <Link href="/">
             <div className="flex items-center cursor-pointer">
-              <img 
-                src={belenLogo} 
-                alt="BeLen" 
-                className="w-8 h-8 rounded-lg mr-2"
-              />
+              <div className="w-8 h-8 rounded-lg mr-2 bg-gradient-to-br from-purple-600 via-blue-500 to-pink-500 flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-sm">B</span>
+              </div>
               <span className="text-black font-medium text-xl">BeLen</span>
             </div>
           </Link>

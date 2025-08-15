@@ -29,7 +29,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const { data: user, isLoading } = useQuery<{ user: User } | null>({
     queryKey: ['/api/auth/me'],
     retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 1 * 60 * 1000, // 1 minute instead of 5 for quicker updates
+    refetchOnWindowFocus: true,
     queryFn: async () => {
       const response = await fetch('/api/auth/me', {
         credentials: 'include',

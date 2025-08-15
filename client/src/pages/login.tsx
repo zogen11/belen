@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { loginSchema, type LoginData } from "@shared/schema";
-import { User } from "lucide-react";
+import { User, Home, Play } from "lucide-react";
 
 export default function LoginPage() {
   const [, setLocation] = useLocation();
@@ -170,26 +170,36 @@ export default function LoginPage() {
       {/* Bottom Navigation */}
       <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="flex justify-around py-2">
-          <button className="flex flex-col items-center py-2 text-gray-600 dark:text-gray-400">
-            <div className="w-6 h-6 mb-1">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-              </svg>
-            </div>
+          <button 
+            onClick={() => {
+              toast({
+                title: "Sign in required",
+                description: "Please sign in to access Home",
+                variant: "destructive"
+              });
+            }}
+            className="flex flex-col items-center py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+            data-testid="nav-home"
+          >
+            <Home className="w-6 h-6 mb-1" />
             <span className="text-xs">Home</span>
           </button>
-          <button className="flex flex-col items-center py-2 text-gray-600 dark:text-gray-400">
-            <div className="w-6 h-6 mb-1">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18 6v12h2V6h-2zM13 6v12h2V6h-2zM8 6v12h2V6H8zM3 6v12h2V6H3z"/>
-              </svg>
-            </div>
+          <button 
+            onClick={() => {
+              toast({
+                title: "Sign in required", 
+                description: "Please sign in to access Shorts",
+                variant: "destructive"
+              });
+            }}
+            className="flex flex-col items-center py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+            data-testid="nav-shorts"
+          >
+            <Play className="w-6 h-6 mb-1" />
             <span className="text-xs">Shorts</span>
           </button>
-          <button className="flex flex-col items-center py-2 text-gray-900 dark:text-white border-b-2 border-gray-900 dark:border-white">
-            <div className="w-6 h-6 mb-1">
-              <User size={24} />
-            </div>
+          <button className="flex flex-col items-center py-2 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400">
+            <User className="w-6 h-6 mb-1" />
             <span className="text-xs font-medium">You</span>
           </button>
         </div>

@@ -1,12 +1,12 @@
 import { Link, useLocation } from "wouter";
-import { Home, Plus, User, PlaySquare, BookmarkIcon } from "lucide-react";
+import { Home, Plus, User, Compass, BookmarkIcon } from "lucide-react";
 
 export default function MobileNav() {
   const [location] = useLocation();
 
   const navItems = [
     { path: "/", icon: Home, label: "Home" },
-    { path: "/shorts", icon: PlaySquare, label: "Shorts" },
+    { path: "/explore", icon: Compass, label: "Explore" },
     { path: "/upload", icon: Plus, label: "", isSpecial: true },
     { path: "/subscriptions", icon: BookmarkIcon, label: "Subscriptions" },
     { path: "/profile", icon: User, label: "You" },

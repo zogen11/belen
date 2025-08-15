@@ -178,6 +178,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const { password, ...userWithoutPassword } = req.user!;
     res.json({ user: userWithoutPassword });
   });
+
+  // Update user profile
+  app.patch("/api/auth/profile", requireAuth, async (req, res) => {
+    try {
+      const updates = req.body;
+      
+      // Don't allow updating password, id, or timestamps through this endpoint
+      delete updates.password;
+      delete updates.id;
+      delete updates.createdAt;
+      delete updates.updatedAt;
+      
+      const updatedUser = await storage.updateUser(req.user!.id, updates);
+      const { password, ...userWithoutPassword } = updatedUser;
+      
+      res.json({ user: userWithoutPassword });
+    } catch (error) {
+      console.error("Profile update error:", error);
+      res.status(500).json({ error: "Failed to update profile" });
+    }
+  });
   
   // Serve uploaded files statically
   app.use('/uploads', (req, res, next) => {

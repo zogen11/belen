@@ -42,6 +42,7 @@ export interface IStorage {
   getUserByPhone(phone: string): Promise<User | undefined>;
   getUserByEmailOrPhone(emailOrPhone: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(userId: string, updates: Partial<InsertUser>): Promise<User>;
   updateUserEarnings(userId: string, earnings: number): Promise<void>;
 
   // Video methods
@@ -147,6 +148,18 @@ export class DatabaseStorage implements IStorage {
         firstName: insertUser.firstName || null,
         lastName: insertUser.lastName || null,
       })
+      .returning();
+    return user;
+  }
+
+  async updateUser(userId: string, updates: Partial<InsertUser>): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
       .returning();
     return user;
   }

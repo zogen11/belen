@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/auth-context";
 import VideoCard from "@/components/content/video-card";
 import ShortsCard from "@/components/content/shorts-card";
 import PhotoCard from "@/components/content/photo-card";
@@ -25,7 +26,8 @@ interface SocialLink {
 }
 
 export default function Profile() {
-  const currentUserId = "default-user"; // TODO: Get from auth
+  const { user } = useAuth();
+  const currentUserId = user?.id || "default-user";
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [username, setUsername] = useState("Your Channel");
@@ -64,13 +66,17 @@ export default function Profile() {
   const totalLikes = userPhotos.reduce((sum: number, photo: any) => sum + (photo.likes || 0), 0);
   const totalEarnings = [...userVideos, ...userShorts, ...userPhotos].reduce((sum: number, item: any) => sum + (item.earnings || 0), 0);
 
-  // User data
-  const user = {
+  // User data (merged with auth user)
+  const userData = {
     id: currentUserId,
-    username: username,
-    followers: 1250,
-    following: 89,
-    totalEarnings: totalEarnings,
+    username: user?.username || username,
+    email: user?.email || "",
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    followers: user?.followers || 1250,
+    following: user?.following || 89,
+    totalEarnings: user?.totalEarnings || totalEarnings,
+    profileImageUrl: user?.profileImageUrl || profileImage,
     bio: bio,
     joinDate: "August 2025",
   };
@@ -96,9 +102,15 @@ export default function Profile() {
       if (response.ok) {
         const photo = await response.json();
         setProfileImage(photo.imageUrl);
+        
+        // Update user profile with new photo URL
+        profileUpdateMutation.mutate({
+          profileImageUrl: photo.imageUrl
+        });
+        
         toast({
           title: "Success",
-          description: "Profile photo updated successfully!",
+          description: "Profile photo updated and saved to database!",
         });
       }
     } catch (error) {
@@ -110,14 +122,44 @@ export default function Profile() {
     }
   };
 
+  // Profile update mutation
+  const profileUpdateMutation = useMutation({
+    mutationFn: async (updates: any) => {
+      return await apiRequest('/api/auth/profile', {
+        method: 'PATCH',
+        body: JSON.stringify(updates),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+      setIsEditing(false);
+      toast({
+        title: "Success",
+        description: "Profile updated successfully and saved to database!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error", 
+        description: "Failed to update profile",
+        variant: "destructive",
+      });
+    }
+  });
+
   // Save profile changes
   const handleSaveProfile = () => {
-    // In a real app, this would save to backend
-    setIsEditing(false);
-    toast({
-      title: "Success",
-      description: "Profile updated successfully!",
-    });
+    const updates = {
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      username: username,
+      profileImageUrl: profileImage || user?.profileImageUrl,
+    };
+    
+    profileUpdateMutation.mutate(updates);
   };
 
   // Add social media link
@@ -187,7 +229,7 @@ export default function Profile() {
                 ) : (
                   <div className="w-32 h-32 bg-gradient-to-br from-purple-600 via-blue-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
                     <span className="text-white text-4xl font-bold">
-                      {user.username.charAt(0)}
+                      {(userData.username || 'U').charAt(0).toUpperCase()}
                     </span>
                   </div>
                 )}
@@ -220,13 +262,13 @@ export default function Profile() {
                       />
                     ) : (
                       <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                        {user.username}
+                        {userData.username}
                       </h1>
                     )}
                     <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-3">
-                      <span>{user.followers.toLocaleString()} followers</span>
-                      <span>{user.following.toLocaleString()} following</span>
-                      <span>Joined {user.joinDate}</span>
+                      <span>{userData.followers.toLocaleString()} followers</span>
+                      <span>{userData.following.toLocaleString()} following</span>
+                      <span>Joined {userData.joinDate}</span>
                     </div>
                   </div>
                   <div className="flex space-x-3">

@@ -41,11 +41,8 @@ export default function Header() {
             <button className="p-2 hover:bg-gray-100 rounded-full">
               <Cast className="w-6 h-6 text-gray-600" />
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded-full relative">
+            <button className="p-2 hover:bg-gray-100 rounded-full">
               <Bell className="w-6 h-6 text-gray-600" />
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-medium">9+</span>
-              </div>
             </button>
             <button className="p-2 hover:bg-gray-100 rounded-full md:hidden">
               <Search className="w-6 h-6 text-gray-600" />

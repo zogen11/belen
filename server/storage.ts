@@ -14,6 +14,9 @@ export interface IStorage {
   // User methods
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByPhone(phone: string): Promise<User | undefined>;
+  getUserByEmailOrPhone(emailOrPhone: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserEarnings(userId: string, earnings: number): Promise<void>;
 
@@ -74,15 +77,40 @@ export class MemStorage implements IStorage {
     );
   }
 
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.email === email,
+    );
+  }
+
+  async getUserByPhone(phone: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.phone === phone,
+    );
+  }
+
+  async getUserByEmailOrPhone(emailOrPhone: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.email === emailOrPhone || user.phone === emailOrPhone,
+    );
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
     const user: User = { 
       ...insertUser, 
       id, 
+      phone: insertUser.phone || null,
+      firstName: insertUser.firstName || null,
+      lastName: insertUser.lastName || null,
+      profileImageUrl: null,
+      isEmailVerified: false,
+      isPhoneVerified: false,
       followers: 0, 
       following: 0, 
       totalEarnings: 0,
-      createdAt: new Date()
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     this.users.set(id, user);
     return user;

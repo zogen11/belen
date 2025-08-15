@@ -1,13 +1,16 @@
 import type { Express } from "express";
 import express from "express";
+import session from "express-session";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertVideoSchema, insertShortsSchema, insertPhotoSchema } from "@shared/schema";
+import { insertVideoSchema, insertShortsSchema, insertPhotoSchema, loginSchema, signupSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import { randomUUID } from "crypto";
 import path from "path";
 import fs from "fs";
+import { hashPassword, authenticateUser, requireAuth, optionalAuth } from "./auth";
+import MemoryStore from "memorystore";
 
 // Configure multer for file uploads
 const uploadDir = path.join(process.cwd(), "uploads");
@@ -41,6 +44,105 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Setup session management
+  const SessionStore = MemoryStore(session);
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    store: new SessionStore({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    }),
+    cookie: {
+      secure: false, // set to true in production with HTTPS
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
+
+  // Authentication routes
+  app.post("/api/auth/signup", async (req, res) => {
+    try {
+      const validatedData = signupSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUserByEmail = await storage.getUserByEmail(validatedData.email);
+      if (existingUserByEmail) {
+        return res.status(400).json({ error: "User with this email already exists" });
+      }
+
+      const existingUserByUsername = await storage.getUserByUsername(validatedData.username);
+      if (existingUserByUsername) {
+        return res.status(400).json({ error: "Username already taken" });
+      }
+
+      if (validatedData.phone) {
+        const existingUserByPhone = await storage.getUserByPhone(validatedData.phone);
+        if (existingUserByPhone) {
+          return res.status(400).json({ error: "User with this phone number already exists" });
+        }
+      }
+
+      // Hash password and create user
+      const hashedPassword = await hashPassword(validatedData.password);
+      const user = await storage.createUser({
+        ...validatedData,
+        password: hashedPassword,
+      });
+
+      // Create session
+      req.session.userId = user.id;
+
+      // Return user without password
+      const { password, ...userWithoutPassword } = user;
+      res.status(201).json({ user: userWithoutPassword });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors[0].message });
+      }
+      console.error("Signup error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const validatedData = loginSchema.parse(req.body);
+      
+      const user = await authenticateUser(validatedData.emailOrPhone, validatedData.password);
+      if (!user) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      // Create session
+      req.session.userId = user.id;
+
+      // Return user without password
+      const { password, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors[0].message });
+      }
+      console.error("Login error:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ error: "Could not log out" });
+      }
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+
+  app.get("/api/auth/me", requireAuth, (req, res) => {
+    const { password, ...userWithoutPassword } = req.user!;
+    res.json({ user: userWithoutPassword });
+  });
   
   // Serve uploaded files statically
   app.use('/uploads', (req, res, next) => {

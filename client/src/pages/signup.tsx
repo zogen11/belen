@@ -42,14 +42,16 @@ export default function SignupPage() {
       
       return response.json();
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
+      // Set the user data directly in the cache
+      queryClient.setQueryData(['/api/auth/me'], data);
+      
       toast({
         title: "Welcome to BeLen!",
         description: "Your account has been created successfully.",
       });
-      // Invalidate and refetch auth query to refresh user state immediately
-      await queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
-      await queryClient.refetchQueries({ queryKey: ['/api/auth/me'] });
+      
+      // Navigate to home immediately
       setLocation("/");
     },
     onError: (error: any) => {

@@ -39,14 +39,16 @@ export default function LoginPage() {
       
       return response.json();
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
+      // Set the user data directly in the cache
+      queryClient.setQueryData(['/api/auth/me'], data);
+      
       toast({
         title: "Welcome back!",
         description: "You've been logged in successfully.",
       });
-      // Invalidate and refetch auth query to refresh user state immediately
-      await queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
-      await queryClient.refetchQueries({ queryKey: ['/api/auth/me'] });
+      
+      // Navigate to home immediately
       setLocation("/");
     },
     onError: (error: any) => {

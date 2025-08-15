@@ -54,7 +54,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     saveUninitialized: false,
     store: new pgStore({
       conString: process.env.DATABASE_URL,
-      createTableIfMissing: true,
+      createTableIfMissing: false, // Changed to false since table already exists
+      tableName: 'sessions', // Use existing sessions table from schema
       ttl: 24 * 60 * 60, // 24 hours in seconds
     }),
     cookie: {
@@ -94,12 +95,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         password: hashedPassword,
       });
 
-      // Create session
+      // Create session and save it
       req.session.userId = user.id;
-
-      // Return user without password
-      const { password, ...userWithoutPassword } = user;
-      res.status(201).json({ user: userWithoutPassword });
+      
+      // Save session before responding
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+          return res.status(500).json({ error: "Session error" });
+        }
+        
+        // Return user without password
+        const { password, ...userWithoutPassword } = user;
+        res.status(201).json({ user: userWithoutPassword });
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors[0].message });
@@ -118,12 +127,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
-      // Create session
+      // Create session and save it
       req.session.userId = user.id;
-
-      // Return user without password
-      const { password, ...userWithoutPassword } = user;
-      res.json({ user: userWithoutPassword });
+      
+      // Save session before responding
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+          return res.status(500).json({ error: "Session error" });
+        }
+        
+        // Return user without password
+        const { password, ...userWithoutPassword } = user;
+        res.json({ user: userWithoutPassword });
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors[0].message });

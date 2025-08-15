@@ -62,64 +62,61 @@ export default function Home() {
     } else if ("imageUrl" in item) {
       return <PhotoCard key={item.id} photo={item as Photo} />;
     } else {
-      return <ShortsCard key={item.id} shorts={item as Shorts} />;
+      return <ShortsCard key={(item as any).id} shorts={item as Shorts} />;
     }
   };
 
   const tabs = [
-    { id: "all", label: "All Content" },
-    { id: "videos", label: "Videos" },
-    { id: "shorts", label: "Shorts" },
-    { id: "photos", label: "Photos" },
-    { id: "trending", label: "Trending" },
+    { id: "all", label: "All" },
+    { id: "trending", label: "New to you" },
+    { id: "videos", label: "Music" },
+    { id: "shorts", label: "Gaming" },
+    { id: "photos", label: "Live" },
+    { id: "all", label: "Cooking" },
+    { id: "all", label: "Recently uploaded" },
   ] as const;
 
   const featuredVideo = allContent?.find(item => "duration" in item && item.duration > 60) as Video;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <Header />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Content Filter Tabs */}
-        <div className="bg-white rounded-lg shadow-sm p-1 mb-6 flex space-x-1 overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-md font-medium whitespace-nowrap transition-colors ${
-                activeTab === tab.id
-                  ? "bg-belen-orange text-white"
-                  : "text-gray-600 hover:text-gray-800"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+      <div className="max-w-7xl mx-auto">
+        {/* YouTube-style Filter Chips */}
+        <div className="px-4 py-3 overflow-x-auto">
+          <div className="flex space-x-3">
+            {tabs.map((tab, index) => (
+              <button
+                key={`${tab.id}-${index}`}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap text-sm transition-colors ${
+                  activeTab === tab.id
+                    ? "bg-black text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Main Feed Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Primary Content Feed */}
-          <div className="lg:col-span-3">
-            {/* Featured Video Section */}
-            {featuredVideo && activeTab === "all" && (
-              <FeaturedVideo video={featuredVideo} />
-            )}
+        {/* YouTube-style Main Feed */}
+        <div className="px-4">
+          {/* Single Column Feed like YouTube */}
+          <div className="max-w-none">
 
-            {/* Content Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            {/* Content Feed - Single column layout like YouTube */}
+            <div className="space-y-4 mb-8">
               {isLoading ? (
                 Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="bg-white rounded-lg shadow-sm overflow-hidden">
-                    <Skeleton className="aspect-video" />
-                    <div className="p-4">
+                  <div key={i} className="flex gap-4">
+                    <Skeleton className="w-40 h-24 md:w-60 md:h-36 rounded-lg flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
                       <Skeleton className="h-4 w-3/4 mb-2" />
-                      <Skeleton className="h-3 w-1/2 mb-2" />
-                      <div className="flex justify-between">
-                        <Skeleton className="h-3 w-16" />
-                        <Skeleton className="h-3 w-12" />
-                      </div>
+                      <Skeleton className="h-3 w-1/2 mb-1" />
+                      <Skeleton className="h-3 w-16" />
                     </div>
                   </div>
                 ))
@@ -127,25 +124,15 @@ export default function Home() {
                 getFilteredContent().map(renderContentCard)
               )}
             </div>
-
-            {/* Load More Button */}
-            <div className="text-center">
-              <Button
-                variant="outline"
-                className="border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                Load More Content
-              </Button>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
-            <TrendingCreators />
-            <EarningsPreview />
-            <QuickActions />
           </div>
         </div>
+      </div>
+      
+      {/* Sidebar for larger screens */}
+      <div className="hidden xl:block fixed right-4 top-20 w-80 space-y-6">
+        <TrendingCreators />
+        <EarningsPreview />
+        <QuickActions />
       </div>
 
       <MobileNav />

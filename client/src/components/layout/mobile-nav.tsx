@@ -1,15 +1,15 @@
 import { Link, useLocation } from "wouter";
-import { Home, Compass, Plus, TrendingUp, User } from "lucide-react";
+import { Home, Plus, User, PlaySquare, BookmarkIcon } from "lucide-react";
 
 export default function MobileNav() {
   const [location] = useLocation();
 
   const navItems = [
     { path: "/", icon: Home, label: "Home" },
-    { path: "/explore", icon: Compass, label: "Explore" },
-    { path: "/upload", icon: Plus, label: "Upload", isSpecial: true },
-    { path: "/earnings", icon: TrendingUp, label: "Earnings" },
-    { path: "/profile", icon: User, label: "Profile" },
+    { path: "/shorts", icon: PlaySquare, label: "Shorts" },
+    { path: "/upload", icon: Plus, label: "", isSpecial: true },
+    { path: "/subscriptions", icon: BookmarkIcon, label: "Subscriptions" },
+    { path: "/profile", icon: User, label: "You" },
   ];
 
   return (
@@ -22,11 +22,10 @@ export default function MobileNav() {
           if (item.isSpecial) {
             return (
               <Link key={item.path} href={item.path}>
-                <button className="flex flex-col items-center space-y-1 p-2">
-                  <div className="w-8 h-8 bg-belen-orange rounded-full flex items-center justify-center">
-                    <Icon className="w-4 h-4 text-white" />
+                <button className="flex flex-col items-center justify-center p-2">
+                  <div className="w-7 h-7 bg-black rounded-sm flex items-center justify-center">
+                    <Icon className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-xs text-gray-400">{item.label}</span>
                 </button>
               </Link>
             );
@@ -35,10 +34,10 @@ export default function MobileNav() {
           return (
             <Link key={item.path} href={item.path}>
               <button className={`flex flex-col items-center space-y-1 p-2 ${
-                isActive ? "text-belen-orange" : "text-gray-400"
+                isActive ? "text-black" : "text-gray-500"
               }`}>
-                <Icon className="w-5 h-5" />
-                <span className="text-xs">{item.label}</span>
+                <Icon className="w-6 h-6" />
+                <span className="text-xs font-medium">{item.label}</span>
               </button>
             </Link>
           );

@@ -32,24 +32,24 @@ export default function TrendingCreators() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Trending Creators</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <div className="bg-white rounded-lg border p-4">
+      <h3 className="font-medium text-gray-900 mb-3 text-sm">Trending Creators</h3>
+      <div className="space-y-3">
         {creators?.map((creator) => (
           <div key={creator.id} className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
-            <div className="flex-1">
-              <p className="font-medium text-gray-900">{creator.username}</p>
-              <p className="text-sm text-gray-500">{(creator.followers || 0).toLocaleString()} followers</p>
+            <div className="w-9 h-9 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
+              {creator.username.charAt(0).toUpperCase()}
             </div>
-            <Button variant="ghost" className="text-belen-orange text-sm font-medium">
-              Follow
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-gray-900 text-sm truncate">{creator.username}</p>
+              <p className="text-xs text-gray-500">{(creator.followers || 0).toLocaleString()} subscribers</p>
+            </div>
+            <Button variant="ghost" className="text-black text-xs font-medium px-2 py-1 h-auto hover:bg-gray-100">
+              Subscribe
             </Button>
           </div>
         ))}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

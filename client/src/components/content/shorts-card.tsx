@@ -44,43 +44,60 @@ export default function ShortsCard({ shorts }: ShortsCardProps) {
   };
 
   return (
-    <Card className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-      <div className="relative aspect-[9/16] max-h-80 group cursor-pointer" onClick={handlePlay}>
+    <div className="flex gap-4 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors" onClick={handlePlay}>
+      {/* Shorts Thumbnail */}
+      <div className="relative w-24 h-32 md:w-32 md:h-44 flex-shrink-0 group">
         <video
           src={shorts.videoUrl}
           poster={shorts.thumbnailUrl}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover rounded-lg"
           muted
           loop
           preload="metadata"
           onMouseEnter={(e) => e.currentTarget.play()}
           onMouseLeave={(e) => e.currentTarget.pause()}
         />
-        <Badge className="absolute top-2 left-2 bg-red-600 text-white text-xs font-medium">
-          SHORT
-        </Badge>
-        <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
+        <div className="absolute top-2 left-2 bg-black bg-opacity-80 text-white px-1.5 py-0.5 rounded text-xs font-bold">
+          SHORTS
+        </div>
+        <div className="absolute bottom-1 right-1 bg-black bg-opacity-80 text-white px-1.5 py-0.5 rounded text-xs font-medium">
           {formatDuration(shorts.duration)}
         </div>
-        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
-          <Play className="text-white text-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all flex items-center justify-center rounded-lg">
+          <Play className="text-white text-xl opacity-0 group-hover:opacity-80 transition-opacity" />
         </div>
       </div>
-      <div className="p-4">
-        <h3 className="font-medium text-gray-900 mb-1">{shorts.title}</h3>
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <div className="flex items-center space-x-1">
-            <Eye className="w-3 h-3" />
-            <span>{(shorts.views || 0).toLocaleString()} views</span>
+      
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex gap-3">
+          {/* Channel Avatar */}
+          <div className="w-9 h-9 bg-gradient-to-br from-purple-400 to-pink-600 rounded-full flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
+            {shorts.title.charAt(0).toUpperCase()}
           </div>
-          {isOwner && (
-            <div className="flex items-center space-x-1 text-belen-green">
-              <DollarSign className="w-3 h-3" />
-              <span>{formatEarnings(shorts.earnings || 0)}</span>
+          
+          {/* Shorts Info */}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
+              {shorts.title}
+            </h3>
+            <div className="text-xs text-gray-600 space-y-0.5">
+              <p>Creator Channel</p>
+              <div className="flex items-center space-x-1">
+                <span>{(shorts.views || 0).toLocaleString()} views</span>
+                <span>•</span>
+                <span>1 hour ago</span>
+                {isOwner && (
+                  <>
+                    <span>•</span>
+                    <span className="text-green-600 font-medium">{formatEarnings(shorts.earnings || 0)}</span>
+                  </>
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

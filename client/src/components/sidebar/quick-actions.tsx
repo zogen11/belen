@@ -29,26 +29,24 @@ export default function QuickActions() {
   ];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Quick Upload</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
+    <div className="bg-white rounded-lg border p-4">
+      <h3 className="font-medium text-gray-900 mb-3 text-sm">Quick Actions</h3>
+      <div className="space-y-2">
         {actions.map((action) => {
           const Icon = action.icon;
           return (
             <Link key={action.href} href={action.href}>
               <Button
                 variant="ghost"
-                className={`w-full flex items-center justify-center space-x-2 py-3 ${action.bgColor} ${action.textColor} transition-colors`}
+                className="w-full flex items-center justify-start space-x-3 py-2 px-3 hover:bg-gray-100 transition-colors text-sm"
               >
-                <Icon className="w-4 h-4" />
-                <span>{action.label}</span>
+                <Icon className="w-4 h-4 text-gray-600" />
+                <span className="text-gray-700">{action.label}</span>
               </Button>
             </Link>
           );
         })}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

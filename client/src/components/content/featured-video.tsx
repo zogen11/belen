@@ -47,73 +47,52 @@ export default function FeaturedVideo({ video }: FeaturedVideoProps) {
     return `$${(cents / 100).toFixed(2)}`;
   };
 
+  // YouTube doesn't have prominent featured videos, so make this more like a regular video
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
-      <div className="relative aspect-video bg-black group cursor-pointer" onClick={handlePlay}>
+    <div className="flex gap-4 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors mb-4" onClick={handlePlay}>
+      {/* Thumbnail */}
+      <div className="relative w-40 h-24 md:w-80 md:h-48 flex-shrink-0 group">
         <img
           src={video.thumbnailUrl}
           alt={video.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover rounded-lg"
         />
-        
-        {/* Video Controls Overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center group-hover:bg-opacity-10 transition-all">
-          <button className="w-16 h-16 bg-white bg-opacity-90 rounded-full flex items-center justify-center hover:bg-opacity-100 transition-all">
-            <Play className="text-2xl text-gray-800 ml-1" />
-          </button>
+        <div className="absolute bottom-1 right-1 bg-black bg-opacity-80 text-white px-1.5 py-0.5 rounded text-xs font-medium">
+          {formatDuration(video.duration)}
         </div>
-
-        {/* Video Info Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
-          <div className="text-white">
-            <div className="flex items-center space-x-2 mb-2">
-              <Badge className="bg-red-600 text-white text-xs font-medium">LIVE</Badge>
-              <span className="bg-black bg-opacity-50 px-2 py-1 rounded text-xs">
-                {formatDuration(video.duration)}
-              </span>
-            </div>
-          </div>
+        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all flex items-center justify-center rounded-lg">
+          <Play className="text-white text-xl opacity-0 group-hover:opacity-80 transition-opacity" />
         </div>
       </div>
-
-      {/* Video Details */}
-      <div className="p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          {video.title}
-        </h2>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
-            <div>
-              <p className="font-medium text-gray-900">Creator Name</p>
-              <p className="text-sm text-gray-500">2.4M followers</p>
+      
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex gap-3">
+          {/* Channel Avatar */}
+          <div className="w-9 h-9 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
+            {video.title.charAt(0).toUpperCase()}
+          </div>
+          
+          {/* Video Info */}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
+              {video.title}
+            </h3>
+            <div className="text-xs text-gray-600 space-y-0.5">
+              <p>Creator Channel</p>
+              <div className="flex items-center space-x-1">
+                <span>{(video.views || 0).toLocaleString()} views</span>
+                <span>•</span>
+                <span>2 days ago</span>
+                {isOwner && (
+                  <>
+                    <span>•</span>
+                    <span className="text-green-600 font-medium">{formatEarnings(video.earnings || 0)}</span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-          <Button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-            Follow
-          </Button>
-        </div>
-
-        {/* Engagement Stats */}
-        <div className="flex items-center space-x-6 text-gray-600">
-          <div className="flex items-center space-x-2">
-            <Eye className="w-4 h-4" />
-            <span>{(video.views || 0).toLocaleString()} views</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <ThumbsUp className="w-4 h-4" />
-            <span>45,321</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Share className="w-4 h-4" />
-            <span>Share</span>
-          </div>
-          {isOwner && (
-            <div className="flex items-center space-x-2 text-belen-green">
-              <DollarSign className="w-4 h-4" />
-              <span>{formatEarnings(video.earnings || 0)}</span>
-            </div>
-          )}
         </div>
       </div>
     </div>

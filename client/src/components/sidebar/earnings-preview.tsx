@@ -20,64 +20,44 @@ export default function EarningsPreview() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Your Earnings</CardTitle>
-          <TrendingUp className="h-5 w-5 text-belen-green" />
+    <div className="bg-white rounded-lg border p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-medium text-gray-900 text-sm">Creator Analytics</h3>
+        <TrendingUp className="h-4 w-4 text-green-500" />
+      </div>
+      
+      {/* Total Earnings */}
+      <div className="bg-gray-50 rounded-lg p-3 mb-3">
+        <p className="text-xs text-gray-600">This Month</p>
+        <p className="text-lg font-semibold text-gray-900">
+          {formatEarnings(mockEarnings.total)}
+        </p>
+        <p className="text-xs text-green-600">
+          +{mockEarnings.growth}% growth
+        </p>
+      </div>
+
+      {/* Simplified breakdown */}
+      <div className="space-y-2 mb-3">
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-gray-600">Videos</span>
+          <span className="font-medium text-gray-900">
+            {formatEarnings(mockEarnings.breakdown.videos)}
+          </span>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Total Earnings */}
-        <div className="bg-green-50 rounded-lg p-4">
-          <p className="text-sm text-gray-600">Total This Month</p>
-          <p className="text-2xl font-bold text-belen-green">
-            {formatEarnings(mockEarnings.total)}
-          </p>
-          <p className="text-xs text-green-600">
-            +{mockEarnings.growth}% from last month
-          </p>
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-gray-600">Shorts</span>
+          <span className="font-medium text-gray-900">
+            {formatEarnings(mockEarnings.breakdown.shorts)}
+          </span>
         </div>
+      </div>
 
-        {/* Breakdown */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Video className="h-4 w-4 text-gray-400" />
-              <span className="text-sm text-gray-600">Video Views</span>
-            </div>
-            <span className="font-medium text-gray-900">
-              {formatEarnings(mockEarnings.breakdown.videos)}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Clock className="h-4 w-4 text-gray-400" />
-              <span className="text-sm text-gray-600">Shorts Views</span>
-            </div>
-            <span className="font-medium text-gray-900">
-              {formatEarnings(mockEarnings.breakdown.shorts)}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Heart className="h-4 w-4 text-gray-400" />
-              <span className="text-sm text-gray-600">Photo Likes</span>
-            </div>
-            <span className="font-medium text-gray-900">
-              {formatEarnings(mockEarnings.breakdown.photos)}
-            </span>
-          </div>
-        </div>
-
-        <Link href="/earnings">
-          <Button className="w-full bg-belen-orange text-white hover:bg-orange-600 transition-colors">
-            View Full Analytics
-          </Button>
-        </Link>
-      </CardContent>
-    </Card>
+      <Link href="/earnings">
+        <Button className="w-full bg-gray-900 text-white hover:bg-gray-800 transition-colors text-xs py-2">
+          View Analytics
+        </Button>
+      </Link>
+    </div>
   );
 }

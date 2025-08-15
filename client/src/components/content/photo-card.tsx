@@ -38,38 +38,58 @@ export default function PhotoCard({ photo }: PhotoCardProps) {
   };
 
   return (
-    <Card className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-      <div className="relative aspect-square group">
+    <div className="flex gap-4 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
+      {/* Photo Thumbnail */}
+      <div className="relative w-40 h-24 md:w-60 md:h-36 flex-shrink-0 group">
         <img
           src={photo.imageUrl}
           alt={photo.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover rounded-lg"
         />
-        <Badge className="absolute top-2 left-2 bg-belen-blue text-white text-xs font-medium">
+        <div className="absolute top-2 left-2 bg-black bg-opacity-80 text-white px-1.5 py-0.5 rounded text-xs font-bold">
           PHOTO
-        </Badge>
-        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
-          <Expand className="text-white text-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all flex items-center justify-center rounded-lg">
+          <Expand className="text-white text-xl opacity-0 group-hover:opacity-80 transition-opacity" />
         </div>
       </div>
-      <div className="p-4">
-        <h3 className="font-medium text-gray-900 mb-1">{photo.title}</h3>
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <button 
-            onClick={handleLike}
-            className={`flex items-center space-x-1 ${hasLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
-          >
-            <Heart className={`w-3 h-3 ${hasLiked ? 'fill-current' : ''}`} />
-            <span>{(photo.likes || 0).toLocaleString()} likes</span>
-          </button>
-          {isOwner && (
-            <div className="flex items-center space-x-1 text-belen-green">
-              <DollarSign className="w-3 h-3" />
-              <span>{formatEarnings(photo.earnings || 0)}</span>
+      
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex gap-3">
+          {/* Channel Avatar */}
+          <div className="w-9 h-9 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-full flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
+            {photo.title.charAt(0).toUpperCase()}
+          </div>
+          
+          {/* Photo Info */}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
+              {photo.title}
+            </h3>
+            <div className="text-xs text-gray-600 space-y-0.5">
+              <p>Creator Channel</p>
+              <div className="flex items-center space-x-1">
+                <button 
+                  onClick={handleLike}
+                  className={`flex items-center space-x-1 ${hasLiked ? 'text-red-500' : 'text-gray-600 hover:text-red-500'}`}
+                >
+                  <Heart className={`w-3 h-3 ${hasLiked ? 'fill-current' : ''}`} />
+                  <span>{(photo.likes || 0).toLocaleString()} likes</span>
+                </button>
+                <span>•</span>
+                <span>3 days ago</span>
+                {isOwner && (
+                  <>
+                    <span>•</span>
+                    <span className="text-green-600 font-medium">{formatEarnings(photo.earnings || 0)}</span>
+                  </>
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

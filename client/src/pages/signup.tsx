@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { signupSchema, type SignupData } from "@shared/schema";
 export default function SignupPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const form = useForm<SignupData>({
     resolver: zodResolver(signupSchema),
@@ -46,6 +47,8 @@ export default function SignupPage() {
         title: "Welcome to BeLen!",
         description: "Your account has been created successfully.",
       });
+      // Invalidate auth query to refresh user state
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
       setLocation("/");
     },
     onError: (error: any) => {

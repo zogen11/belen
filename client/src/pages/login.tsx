@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import { loginSchema, type LoginData } from "@shared/schema";
 export default function LoginPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const form = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
@@ -43,6 +44,8 @@ export default function LoginPage() {
         title: "Welcome back!",
         description: "You've been logged in successfully.",
       });
+      // Invalidate auth query to refresh user state
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
       setLocation("/");
     },
     onError: (error: any) => {

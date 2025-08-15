@@ -11,6 +11,7 @@ import path from "path";
 import fs from "fs";
 import { hashPassword, authenticateUser, requireAuth, optionalAuth } from "./auth";
 import MemoryStore from "memorystore";
+import connectPg from "connect-pg-simple";
 
 // Configure multer for file uploads
 const uploadDir = path.join(process.cwd(), "uploads");
@@ -45,14 +46,16 @@ const upload = multer({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
-  // Setup session management
-  const SessionStore = MemoryStore(session);
+  // Setup session management with PostgreSQL store
+  const pgStore = connectPg(session);
   app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
-    store: new SessionStore({
-      checkPeriod: 86400000 // prune expired entries every 24h
+    store: new pgStore({
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: true,
+      ttl: 24 * 60 * 60, // 24 hours in seconds
     }),
     cookie: {
       secure: false, // set to true in production with HTTPS
@@ -159,6 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const content = await storage.getAllContent();
       res.json(content);
     } catch (error) {
+      console.error("Error fetching content:", error);
       res.status(500).json({ error: "Failed to fetch content" });
     }
   });
@@ -210,7 +214,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload and create video
-  app.post("/api/videos", upload.single('file'), async (req, res) => {
+  app.post("/api/videos", requireAuth, upload.single('file'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
@@ -220,7 +224,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const duration = parseInt(req.body.duration) || 300; // Default 5 minutes
       
       const videoData = {
-        userId: req.body.userId || "default-user", // TODO: Get from auth
+        userId: req.user!.id,
         title: req.body.title,
         description: req.body.description || "",
         thumbnailUrl: fileUrl, // Use same file as thumbnail for now
@@ -237,13 +241,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         res.status(400).json({ error: "Invalid video data", details: error.errors });
       } else {
+        console.error("Error creating video:", error);
         res.status(500).json({ error: "Failed to create video" });
       }
     }
   });
 
   // Upload and create shorts
-  app.post("/api/shorts", upload.single('file'), async (req, res) => {
+  app.post("/api/shorts", requireAuth, upload.single('file'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
@@ -257,7 +262,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const shortsData = {
-        userId: req.body.userId || "default-user", // TODO: Get from auth
+        userId: req.user!.id,
         title: req.body.title,
         description: req.body.description || "",
         thumbnailUrl: fileUrl, // Use same file as thumbnail for now
@@ -274,13 +279,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         res.status(400).json({ error: "Invalid shorts data", details: error.errors });
       } else {
+        console.error("Error creating shorts:", error);
         res.status(500).json({ error: "Failed to create shorts" });
       }
     }
   });
 
   // Upload and create photo
-  app.post("/api/photos", upload.single('file'), async (req, res) => {
+  app.post("/api/photos", requireAuth, upload.single('file'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
@@ -289,7 +295,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fileUrl = `/uploads/${req.file.filename}`;
       
       const photoData = {
-        userId: req.body.userId || "default-user", // TODO: Get from auth
+        userId: req.user!.id,
         title: req.body.title,
         description: req.body.description || "",
         imageUrl: fileUrl,
@@ -304,6 +310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         res.status(400).json({ error: "Invalid photo data", details: error.errors });
       } else {
+        console.error("Error creating photo:", error);
         res.status(500).json({ error: "Failed to create photo" });
       }
     }
@@ -350,11 +357,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Follow/Unfollow user
-  app.post("/api/users/:id/follow", async (req, res) => {
+  app.post("/api/users/:id/follow", requireAuth, async (req, res) => {
     try {
+      const { id } = req.params;
+      
+      // Cannot follow yourself
+      if (req.user!.id === id) {
+        return res.status(400).json({ error: "Cannot follow yourself" });
+      }
+      
       // For now, just return success - would implement proper follow logic
-      res.json({ success: true });
+      res.json({ success: true, message: "Follow functionality will be implemented soon" });
     } catch (error) {
+      console.error("Error following user:", error);
       res.status(500).json({ error: "Failed to follow user" });
     }
   });
@@ -377,10 +392,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get user earnings
-  app.get("/api/users/:id/earnings", async (req, res) => {
+  // Get user earnings (protected route)
+  app.get("/api/users/:id/earnings", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
+      
+      // Users can only access their own earnings
+      if (req.user!.id !== id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
       const user = await storage.getUser(id);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
@@ -395,7 +416,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const photoEarnings = photos.reduce((sum, photo) => sum + (photo.earnings || 0), 0);
 
       res.json({
-        total: user.totalEarnings,
+        total: user.totalEarnings || 0,
         breakdown: {
           videos: videoEarnings,
           shorts: shortsEarnings,
@@ -403,6 +424,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
       });
     } catch (error) {
+      console.error("Error fetching earnings:", error);
       res.status(500).json({ error: "Failed to fetch earnings data" });
     }
   });

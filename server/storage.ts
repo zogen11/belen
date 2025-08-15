@@ -6,8 +6,14 @@ import {
   type Shorts, 
   type InsertShorts, 
   type Photo, 
-  type InsertPhoto 
+  type InsertPhoto,
+  users,
+  videos,
+  shorts,
+  photos
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -44,6 +50,185 @@ export interface IStorage {
   // Content methods
   getAllContent(): Promise<(Video | Shorts | Photo)[]>;
   getTrendingCreators(): Promise<User[]>;
+}
+
+export class DatabaseStorage implements IStorage {
+  // User methods
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async getUserByPhone(phone: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.phone, phone));
+    return user || undefined;
+  }
+
+  async getUserByEmailOrPhone(emailOrPhone: string): Promise<User | undefined> {
+    const userResults = await db.select().from(users).where(
+      eq(users.email, emailOrPhone)
+    );
+    
+    if (userResults.length > 0) {
+      return userResults[0];
+    }
+    
+    const phoneResults = await db.select().from(users).where(
+      eq(users.phone, emailOrPhone)
+    );
+    
+    return phoneResults[0] || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values({
+        ...insertUser,
+        phone: insertUser.phone || null,
+        firstName: insertUser.firstName || null,
+        lastName: insertUser.lastName || null,
+      })
+      .returning();
+    return user;
+  }
+
+  async updateUserEarnings(userId: string, earnings: number): Promise<void> {
+    await db
+      .update(users)
+      .set({ 
+        totalEarnings: earnings,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId));
+  }
+
+  // Video methods
+  async getVideos(): Promise<Video[]> {
+    return await db.select().from(videos).orderBy(desc(videos.createdAt));
+  }
+
+  async getVideo(id: string): Promise<Video | undefined> {
+    const [video] = await db.select().from(videos).where(eq(videos.id, id));
+    return video || undefined;
+  }
+
+  async getVideosByUser(userId: string): Promise<Video[]> {
+    return await db.select().from(videos).where(eq(videos.userId, userId)).orderBy(desc(videos.createdAt));
+  }
+
+  async createVideo(insertVideo: InsertVideo): Promise<Video> {
+    const [video] = await db
+      .insert(videos)
+      .values(insertVideo)
+      .returning();
+    return video;
+  }
+
+  async incrementVideoViews(id: string): Promise<void> {
+    await db
+      .update(videos)
+      .set({ 
+        views: sql`${videos.views} + 1`
+      })
+      .where(eq(videos.id, id));
+  }
+
+  // Shorts methods
+  async getShorts(): Promise<Shorts[]> {
+    return await db.select().from(shorts).orderBy(desc(shorts.createdAt));
+  }
+
+  async getShortsItem(id: string): Promise<Shorts | undefined> {
+    const [shortsItem] = await db.select().from(shorts).where(eq(shorts.id, id));
+    return shortsItem || undefined;
+  }
+
+  async getShortsByUser(userId: string): Promise<Shorts[]> {
+    return await db.select().from(shorts).where(eq(shorts.userId, userId)).orderBy(desc(shorts.createdAt));
+  }
+
+  async createShorts(insertShorts: InsertShorts): Promise<Shorts> {
+    const [shortsItem] = await db
+      .insert(shorts)
+      .values(insertShorts)
+      .returning();
+    return shortsItem;
+  }
+
+  async incrementShortsViews(id: string): Promise<void> {
+    await db
+      .update(shorts)
+      .set({ 
+        views: sql`${shorts.views} + 1`
+      })
+      .where(eq(shorts.id, id));
+  }
+
+  // Photo methods
+  async getPhotos(): Promise<Photo[]> {
+    return await db.select().from(photos).orderBy(desc(photos.createdAt));
+  }
+
+  async getPhoto(id: string): Promise<Photo | undefined> {
+    const [photo] = await db.select().from(photos).where(eq(photos.id, id));
+    return photo || undefined;
+  }
+
+  async getPhotosByUser(userId: string): Promise<Photo[]> {
+    return await db.select().from(photos).where(eq(photos.userId, userId)).orderBy(desc(photos.createdAt));
+  }
+
+  async createPhoto(insertPhoto: InsertPhoto): Promise<Photo> {
+    const [photo] = await db
+      .insert(photos)
+      .values(insertPhoto)
+      .returning();
+    return photo;
+  }
+
+  async incrementPhotoLikes(id: string): Promise<void> {
+    await db
+      .update(photos)
+      .set({ 
+        likes: sql`${photos.likes} + 1`
+      })
+      .where(eq(photos.id, id));
+  }
+
+  // Content methods
+  async getAllContent(): Promise<(Video | Shorts | Photo)[]> {
+    const [videoResults, shortsResults, photoResults] = await Promise.all([
+      this.getVideos(),
+      this.getShorts(),
+      this.getPhotos()
+    ]);
+
+    const allContent = [
+      ...videoResults.map(v => ({ ...v, type: 'video' as const })),
+      ...shortsResults.map(s => ({ ...s, type: 'shorts' as const })),
+      ...photoResults.map(p => ({ ...p, type: 'photo' as const }))
+    ];
+
+    // Sort by creation date, newest first
+    return allContent.sort((a, b) => 
+      new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()
+    );
+  }
+
+  async getTrendingCreators(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.totalEarnings)).limit(10);
+  }
 }
 
 export class MemStorage implements IStorage {
@@ -266,4 +451,7 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Import sql for database operations
+import { sql } from "drizzle-orm";
+
+export const storage = new DatabaseStorage();

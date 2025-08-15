@@ -28,10 +28,11 @@ Preferred communication style: Simple, everyday language.
 - **File Structure**: Modular route organization with separate storage layer
 
 ### Data Storage Solutions
-- **Database**: PostgreSQL with Neon serverless hosting
+- **Database**: PostgreSQL with Neon serverless hosting (ACTIVE)
 - **ORM**: Drizzle ORM for type-safe database operations
 - **Schema Management**: Drizzle Kit for migrations and schema management
-- **Storage Interface**: Abstract storage interface with in-memory implementation for development
+- **Storage Interface**: DatabaseStorage implementation connected to PostgreSQL
+- **Session Storage**: PostgreSQL session store using connect-pg-simple
 - **Database Models**: Users, videos, shorts, and photos with foreign key relationships
 
 ### Content Management System
@@ -42,8 +43,10 @@ Preferred communication style: Simple, everyday language.
 
 ### Authentication and Authorization
 - **Session Management**: Express sessions with PostgreSQL session store (connect-pg-simple)
-- **User System**: Username/password authentication with encrypted password storage
+- **User System**: Email/phone and username authentication with bcrypt password hashing
+- **Protected Routes**: All upload endpoints and user-specific data require authentication
 - **User Profiles**: Creator profiles with follower/following counts and earnings tracking
+- **Real User System**: Migrated from demo data to actual user authentication system
 
 ## External Dependencies
 
@@ -70,5 +73,14 @@ Preferred communication style: Simple, everyday language.
 - **Zod**: Runtime type validation for API contracts
 
 ### File Handling
-- **File Upload System**: Placeholder implementation requiring external storage service (AWS S3, Cloudinary, etc.)
-- **Media Processing**: Mock URLs for development, needs integration with media processing service
+- **File Upload System**: Local file storage with multer for development
+- **Protected Uploads**: All content uploads require user authentication
+- **Media Processing**: Local file URLs, ready for external storage service integration
+
+## Recent Changes (January 2025)
+- ✅ Migrated from demo data to real PostgreSQL database
+- ✅ Implemented email/phone authentication system with bcrypt
+- ✅ Added protected routes for all upload endpoints
+- ✅ Configured PostgreSQL session storage
+- ✅ Connected all storage operations to database via DatabaseStorage class
+- ✅ Fixed login flow to properly redirect authenticated users to main app

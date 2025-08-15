@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Edit, Settings, Camera, Video, Clock, Heart, Eye, DollarSign, Save, X, Plus, Instagram, Youtube, Globe, ExternalLink } from "lucide-react";
-import { SiTiktok, SiTwitter, SiFacebook, SiLinkedin } from "react-icons/si";
+import { SiTiktok, SiFacebook, SiLinkedin, SiX } from "react-icons/si";
 import Header from "@/components/layout/header";
 import MobileNav from "@/components/layout/mobile-nav";
 import { Button } from "@/components/ui/button";
@@ -55,9 +55,9 @@ export default function Profile() {
   });
 
   // Filter content for current user
-  const userVideos = videos.filter((video: any) => video.userId === currentUserId);
-  const userShorts = shorts.filter((short: any) => short.userId === currentUserId);
-  const userPhotos = photos.filter((photo: any) => photo.userId === currentUserId);
+  const userVideos = (videos as any[]).filter((video: any) => video.userId === currentUserId);
+  const userShorts = (shorts as any[]).filter((short: any) => short.userId === currentUserId);
+  const userPhotos = (photos as any[]).filter((photo: any) => photo.userId === currentUserId);
 
   // Calculate real stats
   const totalViews = [...userVideos, ...userShorts].reduce((sum: number, item: any) => sum + (item.views || 0), 0);
@@ -127,7 +127,7 @@ export default function Profile() {
         Instagram: Instagram,
         TikTok: SiTiktok,
         YouTube: Youtube,
-        Twitter: SiTwitter,
+        Twitter: SiX,
         Facebook: SiFacebook,
         LinkedIn: SiLinkedin,
         Website: Globe,

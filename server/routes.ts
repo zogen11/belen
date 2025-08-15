@@ -200,6 +200,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to update profile" });
     }
   });
+
+  // Upload profile photo
+  app.post("/api/auth/profile/photo", requireAuth, upload.single('profileImage'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No image file uploaded" });
+      }
+
+      // Check if file is an image
+      if (!req.file.mimetype.startsWith('image/')) {
+        return res.status(400).json({ error: "Only image files are allowed" });
+      }
+
+      const profileImageUrl = `/uploads/${req.file.filename}`;
+      
+      // Update user's profile image URL in database
+      const updatedUser = await storage.updateUser(req.user!.id, {
+        profileImageUrl: profileImageUrl
+      });
+
+      const { password, ...userWithoutPassword } = updatedUser;
+      
+      console.log(`Profile photo updated for user ${req.user!.id}: ${profileImageUrl}`);
+      
+      res.json({ 
+        profileImageUrl: profileImageUrl,
+        user: userWithoutPassword 
+      });
+    } catch (error) {
+      console.error("Profile photo upload error:", error);
+      res.status(500).json({ error: "Failed to upload profile photo" });
+    }
+  });
   
   // Serve uploaded files statically
   app.use('/uploads', (req, res, next) => {

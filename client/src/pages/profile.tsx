@@ -126,10 +126,27 @@ export default function Profile() {
         
         if (data.profileImageUrl) {
           setProfileImage(data.profileImageUrl);
+          
+          // Update user data in auth context immediately
+          queryClient.setQueryData(['/api/auth/me'], (oldData: any) => {
+            if (oldData?.user) {
+              return {
+                ...oldData,
+                user: {
+                  ...oldData.user,
+                  profileImageUrl: data.profileImageUrl
+                }
+              };
+            }
+            return oldData;
+          });
+          
           toast({
             title: "Profile photo updated!",
             description: "Your new profile photo has been saved.",
           });
+          
+          // Also invalidate to get fresh data from server
           queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
         }
       } catch (error) {
@@ -167,9 +184,9 @@ export default function Profile() {
               <div className="flex items-center gap-6">
                 {/* Profile Avatar */}
                 <div className="relative">
-                  {userData.profileImageUrl ? (
+                  {(userData.profileImageUrl || profileImage) ? (
                     <img 
-                      src={userData.profileImageUrl} 
+                      src={profileImage || userData.profileImageUrl} 
                       alt="Profile" 
                       className="w-24 h-24 rounded-full object-cover"
                       data-testid="profile-avatar"

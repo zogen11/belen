@@ -18,12 +18,8 @@ export default function SignupPage() {
   const form = useForm<SignupData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      email: "",
-      phone: "",
-      username: "",
+      emailOrPhone: "",
       password: "",
-      firstName: "",
-      lastName: "",
     },
   });
 
@@ -112,100 +108,19 @@ export default function SignupPage() {
           {/* Form */}
           <div className="space-y-3">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="First name"
-                            type="text"
-                            className="h-11 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg"
-                            data-testid="input-first-name"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Last name"
-                            type="text"
-                            className="h-11 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg"
-                            data-testid="input-last-name"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="email"
+                  name="emailOrPhone"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
                         <Input
                           {...field}
-                          placeholder="Email address"
-                          type="email"
-                          autoComplete="email"
-                          className="h-11 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg"
-                          data-testid="input-email"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="Username"
-                          type="text"
+                          placeholder="Email or phone number"
                           autoComplete="username"
-                          className="h-11 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg"
-                          data-testid="input-username"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="Phone number (optional)"
-                          type="tel"
-                          autoComplete="tel"
-                          className="h-11 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg"
-                          data-testid="input-phone"
+                          className="h-12 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg text-base"
+                          data-testid="input-emailOrPhone"
                         />
                       </FormControl>
                       <FormMessage />
@@ -224,7 +139,7 @@ export default function SignupPage() {
                           placeholder="Password"
                           type="password"
                           autoComplete="new-password"
-                          className="h-11 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg"
+                          className="h-12 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-lg text-base"
                           data-testid="input-password"
                         />
                       </FormControl>
@@ -235,7 +150,7 @@ export default function SignupPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-colors mt-4"
+                  className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-colors mt-6"
                   disabled={signupMutation.isPending}
                   data-testid="button-signup"
                 >

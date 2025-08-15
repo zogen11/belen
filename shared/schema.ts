@@ -159,12 +159,8 @@ export const loginSchema = z.object({
 });
 
 export const signupSchema = z.object({
-  email: z.string().email("Please enter a valid email"),
-  phone: z.string().min(10, "Please enter a valid phone number").optional(),
-  username: z.string().min(3, "Username must be at least 3 characters"),
+  emailOrPhone: z.string().min(1, "Email or phone number is required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  firstName: z.string().min(1, "First name is required").optional(),
-  lastName: z.string().min(1, "Last name is required").optional(),
 });
 
 // Auth types

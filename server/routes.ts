@@ -70,19 +70,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = signupSchema.parse(req.body);
       
-      // Check if user already exists
-      const existingUserByEmail = await storage.getUserByEmail(validatedData.email);
-      if (existingUserByEmail) {
-        return res.status(400).json({ error: "User with this email already exists" });
+      // Determine if it's email or phone
+      const isEmail = validatedData.emailOrPhone.includes('@');
+      const email = isEmail ? validatedData.emailOrPhone : "";
+      const phone = isEmail ? "" : validatedData.emailOrPhone;
+      
+      // Generate username from email/phone
+      let username = isEmail 
+        ? validatedData.emailOrPhone.split('@')[0] 
+        : `user_${validatedData.emailOrPhone.slice(-4)}`;
+      
+      // Make username unique by adding random suffix if needed
+      const existingByUsername = await storage.getUserByUsername(username);
+      if (existingByUsername) {
+        username = `${username}_${Math.floor(Math.random() * 1000)}`;
       }
-
-      const existingUserByUsername = await storage.getUserByUsername(validatedData.username);
-      if (existingUserByUsername) {
-        return res.status(400).json({ error: "Username already taken" });
-      }
-
-      if (validatedData.phone) {
-        const existingUserByPhone = await storage.getUserByPhone(validatedData.phone);
+      
+      // Check if user exists
+      if (isEmail) {
+        const existingUserByEmail = await storage.getUserByEmail(email);
+        if (existingUserByEmail) {
+          return res.status(400).json({ error: "User with this email already exists" });
+        }
+      } else {
+        const existingUserByPhone = await storage.getUserByPhone(phone);
         if (existingUserByPhone) {
           return res.status(400).json({ error: "User with this phone number already exists" });
         }
@@ -91,8 +102,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Hash password and create user
       const hashedPassword = await hashPassword(validatedData.password);
       const user = await storage.createUser({
-        ...validatedData,
+        email,
+        phone,
+        username,
         password: hashedPassword,
+        firstName: "",
+        lastName: "",
       });
 
       // Create session and save it

@@ -12,7 +12,7 @@ import { loginSchema, type LoginData } from "@shared/schema";
 import { User, Home, Play } from "lucide-react";
 
 export default function LoginPage() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -171,13 +171,7 @@ export default function LoginPage() {
       <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="flex justify-around py-2">
           <button 
-            onClick={() => {
-              toast({
-                title: "Sign in required",
-                description: "Please sign in to access Home",
-                variant: "destructive"
-              });
-            }}
+            onClick={() => setLocation("/")}
             className="flex flex-col items-center py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             data-testid="nav-home"
           >
@@ -185,13 +179,7 @@ export default function LoginPage() {
             <span className="text-xs">Home</span>
           </button>
           <button 
-            onClick={() => {
-              toast({
-                title: "Sign in required", 
-                description: "Please sign in to access Shorts",
-                variant: "destructive"
-              });
-            }}
+            onClick={() => setLocation("/explore")}
             className="flex flex-col items-center py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             data-testid="nav-shorts"
           >

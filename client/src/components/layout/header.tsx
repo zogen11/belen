@@ -63,32 +63,45 @@ export default function Header() {
             <button className="p-2 hover:bg-gray-100 rounded-full">
               <Cast className="w-6 h-6 text-gray-600" />
             </button>
-            <button className="p-2 hover:bg-gray-100 rounded-full">
-              <Bell className="w-6 h-6 text-gray-600" />
-            </button>
             <button 
               onClick={handleMobileSearch}
               className="p-2 hover:bg-gray-100 rounded-full md:hidden"
             >
               <Search className="w-6 h-6 text-gray-600" />
             </button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium hover:bg-blue-600 transition-colors" data-testid="button-user-menu">
-                  {user?.firstName?.charAt(0)?.toUpperCase() || user?.username?.charAt(0)?.toUpperCase() || 'U'}
+            
+            {user ? (
+              // Authenticated user - show notifications and profile menu
+              <>
+                <button className="p-2 hover:bg-gray-100 rounded-full">
+                  <Bell className="w-6 h-6 text-gray-600" />
                 </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => navigate('/profile')} data-testid="menu-profile">
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={logout} data-testid="menu-logout">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-medium hover:bg-blue-600 transition-colors" data-testid="button-user-menu">
+                      {user?.firstName?.charAt(0)?.toUpperCase() || user?.username?.charAt(0)?.toUpperCase() || 'U'}
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem onClick={() => navigate('/profile')} data-testid="menu-profile">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={logout} data-testid="menu-logout">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              // Non-authenticated user - show sign in button
+              <Link href="/login">
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full font-medium text-sm">
+                  Sign in
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </div>

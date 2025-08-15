@@ -17,8 +17,18 @@ import ShortsWatch from "@/pages/shorts-watch";
 import LoginPage from "@/pages/login";
 import SignupPage from "@/pages/signup";
 
+function ProtectedRoute({ component: Component, ...rest }: { component: React.ComponentType }) {
+  const { isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+  
+  return <Component {...rest} />;
+}
+
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -28,28 +38,23 @@ function Router() {
     );
   }
 
-  if (!isAuthenticated) {
-    return (
-      <Switch>
-        <Route path="/signup" component={SignupPage} />
-        <Route path="/login" component={LoginPage} />
-        <Route path="/" component={LoginPage} />
-        <Route component={LoginPage} />
-      </Switch>
-    );
-  }
-
   return (
     <Switch>
+      {/* Public routes - accessible without login */}
       <Route path="/" component={Home} />
       <Route path="/explore" component={Explore} />
       <Route path="/search" component={Search} />
-      <Route path="/subscriptions" component={Subscriptions} />
-      <Route path="/upload" component={Upload} />
-      <Route path="/earnings" component={Earnings} />
-      <Route path="/profile" component={Profile} />
       <Route path="/video/:id" component={VideoWatch} />
       <Route path="/shorts/:id" component={ShortsWatch} />
+      <Route path="/signup" component={SignupPage} />
+      <Route path="/login" component={LoginPage} />
+      
+      {/* Protected routes - require login */}
+      <Route path="/subscriptions" component={() => <ProtectedRoute component={Subscriptions} />} />
+      <Route path="/upload" component={() => <ProtectedRoute component={Upload} />} />
+      <Route path="/earnings" component={() => <ProtectedRoute component={Earnings} />} />
+      <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
+      
       <Route component={NotFound} />
     </Switch>
   );

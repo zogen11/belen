@@ -1,18 +1,45 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Edit, Settings, Camera, Video, Clock, Heart, Eye, DollarSign } from "lucide-react";
+import { useState, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Edit, Settings, Camera, Video, Clock, Heart, Eye, DollarSign, Save, X, Plus, Instagram, Youtube, Globe, ExternalLink } from "lucide-react";
+import { SiTiktok, SiTwitter, SiFacebook, SiLinkedin } from "react-icons/si";
 import Header from "@/components/layout/header";
 import MobileNav from "@/components/layout/mobile-nav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import VideoCard from "@/components/content/video-card";
 import ShortsCard from "@/components/content/shorts-card";
 import PhotoCard from "@/components/content/photo-card";
 
+interface SocialLink {
+  platform: string;
+  url: string;
+  icon: React.ComponentType<any>;
+}
+
 export default function Profile() {
   const currentUserId = "default-user"; // TODO: Get from auth
+  const [isEditing, setIsEditing] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [username, setUsername] = useState("Your Channel");
+  const [bio, setBio] = useState("Content creator sharing amazing videos, shorts, and photos!");
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([
+    { platform: "Instagram", url: "", icon: Instagram },
+    { platform: "TikTok", url: "", icon: SiTiktok },
+    { platform: "YouTube", url: "", icon: Youtube },
+  ]);
+  const [newSocialPlatform, setNewSocialPlatform] = useState("");
+  const [newSocialUrl, setNewSocialUrl] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Fetch real content data
   const { data: videos = [], isLoading: videosLoading } = useQuery({
@@ -40,12 +67,92 @@ export default function Profile() {
   // User data
   const user = {
     id: currentUserId,
-    username: "Your Profile",
+    username: username,
     followers: 1250,
     following: 89,
     totalEarnings: totalEarnings,
-    bio: "Content creator sharing amazing videos, shorts, and photos!",
+    bio: bio,
     joinDate: "August 2025",
+  };
+
+  // Profile photo upload
+  const handleProfilePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('userId', currentUserId);
+    formData.append('title', 'Profile Photo');
+    formData.append('description', 'Profile photo');
+    formData.append('isMonetized', 'false');
+
+    try {
+      const response = await fetch('/api/photos', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (response.ok) {
+        const photo = await response.json();
+        setProfileImage(photo.imageUrl);
+        toast({
+          title: "Success",
+          description: "Profile photo updated successfully!",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to upload profile photo",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Save profile changes
+  const handleSaveProfile = () => {
+    // In a real app, this would save to backend
+    setIsEditing(false);
+    toast({
+      title: "Success",
+      description: "Profile updated successfully!",
+    });
+  };
+
+  // Add social media link
+  const handleAddSocialLink = () => {
+    if (newSocialPlatform && newSocialUrl) {
+      const platformIcons: Record<string, React.ComponentType<any>> = {
+        Instagram: Instagram,
+        TikTok: SiTiktok,
+        YouTube: Youtube,
+        Twitter: SiTwitter,
+        Facebook: SiFacebook,
+        LinkedIn: SiLinkedin,
+        Website: Globe,
+      };
+      
+      setSocialLinks([...socialLinks, {
+        platform: newSocialPlatform,
+        url: newSocialUrl,
+        icon: platformIcons[newSocialPlatform] || Globe
+      }]);
+      setNewSocialPlatform("");
+      setNewSocialUrl("");
+    }
+  };
+
+  // Remove social link
+  const handleRemoveSocialLink = (index: number) => {
+    setSocialLinks(socialLinks.filter((_, i) => i !== index));
+  };
+
+  // Update social link URL
+  const handleUpdateSocialLink = (index: number, url: string) => {
+    const updated = [...socialLinks];
+    updated[index].url = url;
+    setSocialLinks(updated);
   };
 
   const stats = {
@@ -61,7 +168,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -71,14 +178,30 @@ export default function Profile() {
             <div className="flex flex-col md:flex-row items-start md:items-center space-y-6 md:space-y-0 md:space-x-8">
               {/* Avatar */}
               <div className="relative">
-                <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-4xl font-bold">
-                    {user.username.charAt(0)}
-                  </span>
-                </div>
+                {profileImage ? (
+                  <img 
+                    src={profileImage} 
+                    alt="Profile" 
+                    className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
+                  />
+                ) : (
+                  <div className="w-32 h-32 bg-gradient-to-br from-purple-600 via-blue-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-white text-4xl font-bold">
+                      {user.username.charAt(0)}
+                    </span>
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfilePhotoUpload}
+                  className="hidden"
+                />
                 <Button
                   size="sm"
-                  className="absolute bottom-0 right-0 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-50"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-0 right-0 rounded-full bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 shadow-lg"
                 >
                   <Camera className="w-4 h-4" />
                 </Button>
@@ -87,10 +210,19 @@ export default function Profile() {
               {/* Profile Info */}
               <div className="flex-1">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                      {user.username}
-                    </h1>
+                  <div className="flex-1">
+                    {isEditing ? (
+                      <Input
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        className="text-3xl font-bold text-gray-900 mb-2 border-0 shadow-none p-0 bg-transparent"
+                        placeholder="Channel name"
+                      />
+                    ) : (
+                      <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                        {user.username}
+                      </h1>
+                    )}
                     <div className="flex flex-wrap items-center gap-4 text-gray-600 mb-3">
                       <span>{user.followers.toLocaleString()} followers</span>
                       <span>{user.following.toLocaleString()} following</span>
@@ -98,17 +230,128 @@ export default function Profile() {
                     </div>
                   </div>
                   <div className="flex space-x-3">
-                    <Button variant="outline" size="sm">
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit Profile
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Settings className="w-4 h-4" />
-                    </Button>
+                    {isEditing ? (
+                      <>
+                        <Button onClick={handleSaveProfile} size="sm">
+                          <Save className="w-4 h-4 mr-2" />
+                          Save
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                          <Edit className="w-4 h-4 mr-2" />
+                          Edit Profile
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Settings className="w-4 h-4" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
 
-                <p className="text-gray-700 mb-4 max-w-2xl">{user.bio}</p>
+                {/* Bio Section */}
+                <div className="mb-4">
+                  {isEditing ? (
+                    <Textarea
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
+                      placeholder="Tell your audience about your channel..."
+                      className="max-w-2xl"
+                      rows={3}
+                    />
+                  ) : (
+                    <p className="text-gray-700 max-w-2xl">{user.bio}</p>
+                  )}
+                </div>
+
+                {/* Social Links */}
+                <div className="mb-4">
+                  <h3 className="text-sm font-medium text-gray-900 mb-2">Social Media</h3>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {socialLinks.map((link, index) => {
+                      const IconComponent = link.icon;
+                      return (
+                        <div key={index} className="flex items-center gap-2">
+                          {isEditing ? (
+                            <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-2">
+                              <IconComponent className="w-4 h-4" />
+                              <Input
+                                value={link.url}
+                                onChange={(e) => handleUpdateSocialLink(index, e.target.value)}
+                                placeholder={`${link.platform} URL`}
+                                className="w-40 h-8"
+                              />
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                onClick={() => handleRemoveSocialLink(index)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          ) : link.url ? (
+                            <a 
+                              href={link.url.startsWith('http') ? link.url : `https://${link.url}`}
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 rounded-lg px-3 py-1 transition-colors"
+                            >
+                              <IconComponent className="w-4 h-4" />
+                              <span className="text-sm">{link.platform}</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                    
+                    {isEditing && (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add Link
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Add Social Media Link</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <Select value={newSocialPlatform} onValueChange={setNewSocialPlatform}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select platform" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Instagram">Instagram</SelectItem>
+                                <SelectItem value="TikTok">TikTok</SelectItem>
+                                <SelectItem value="YouTube">YouTube</SelectItem>
+                                <SelectItem value="Twitter">Twitter</SelectItem>
+                                <SelectItem value="Facebook">Facebook</SelectItem>
+                                <SelectItem value="LinkedIn">LinkedIn</SelectItem>
+                                <SelectItem value="Website">Website</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Input
+                              value={newSocialUrl}
+                              onChange={(e) => setNewSocialUrl(e.target.value)}
+                              placeholder="Enter URL"
+                            />
+                            <Button onClick={handleAddSocialLink} className="w-full">
+                              Add Link
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                  </div>
+                </div>
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">

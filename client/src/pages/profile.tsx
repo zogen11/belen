@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Edit, Settings, Camera, Video, Clock, Heart, Eye, DollarSign, Save, X, Plus, Instagram, Youtube, Globe, ExternalLink, History, Bookmark, TrendingUp, Download, ChevronRight, Play, ThumbsUp, HelpCircle, MessageSquare, Info, Shield, Bell, Palette, Monitor, Trash2, Key, Users, BarChart3 } from "lucide-react";
 import { SiTiktok, SiFacebook, SiLinkedin, SiX } from "react-icons/si";
 import Header from "@/components/layout/header";
@@ -25,6 +26,7 @@ interface SocialLink {
 
 export default function Profile() {
   const { user } = useAuth();
+  const [, navigate] = useLocation();
   const currentUserId = user?.id || "default-user";
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -243,6 +245,13 @@ export default function Profile() {
 
                 {/* Action Buttons */}
                 <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate("/profile-edit")}
+                    className="px-6"
+                  >
+                    Manage channel
+                  </Button>
                   <Button 
                     variant="outline" 
                     size="sm" 

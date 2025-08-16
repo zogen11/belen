@@ -12,6 +12,7 @@ import Subscriptions from "@/pages/subscriptions";
 import Upload from "@/pages/upload";
 import Earnings from "@/pages/earnings";
 import Profile from "@/pages/profile";
+import ProfileEdit from "@/pages/profile-edit";
 import VideoWatch from "@/pages/video-watch";
 import ShortsWatch from "@/pages/shorts-watch";
 import LoginPage from "@/pages/login";
@@ -54,6 +55,7 @@ function Router() {
       <Route path="/upload" component={() => <ProtectedRoute component={Upload} />} />
       <Route path="/earnings" component={() => <ProtectedRoute component={Earnings} />} />
       <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
+      <Route path="/profile-edit" component={() => <ProtectedRoute component={ProfileEdit} />} />
       
       <Route component={NotFound} />
     </Switch>

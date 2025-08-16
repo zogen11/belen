@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Search, Plus, Cast, Bell, LogOut, User } from "lucide-react";
+import { Search, Plus, Cast, Bell, LogOut, User, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -86,6 +86,10 @@ export default function Header() {
                     <DropdownMenuItem onClick={() => navigate('/profile')} data-testid="menu-profile">
                       <User className="mr-2 h-4 w-4" />
                       <span>Profile</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/accounts')} data-testid="menu-accounts">
+                      <Users className="mr-2 h-4 w-4" />
+                      <span>All Accounts</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={logout} data-testid="menu-logout">
                       <LogOut className="mr-2 h-4 w-4" />

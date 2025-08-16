@@ -484,6 +484,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all users (emails) for account overview
+  app.get("/api/users", async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Return users without passwords for security
+      const safeUsers = users.map(({ password, ...user }) => user);
+      res.json(safeUsers);
+    } catch (error) {
+      console.error("Get all users error:", error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
   // Follow/Unfollow user
   app.post("/api/users/:id/follow", requireAuth, async (req, res) => {
     try {

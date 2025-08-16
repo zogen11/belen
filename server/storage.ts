@@ -37,6 +37,7 @@ import { randomUUID } from "crypto";
 export interface IStorage {
   // User methods
   getUser(id: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByPhone(phone: string): Promise<User | undefined>;
@@ -113,6 +114,12 @@ export class DatabaseStorage implements IStorage {
     if (!db) throw new Error("Database not available");
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    if (!db) throw new Error("Database not available");
+    const allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
+    return allUsers;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
@@ -526,6 +533,12 @@ export class MemStorage implements IStorage {
   // User methods
   async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values()).sort((a, b) => 
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {

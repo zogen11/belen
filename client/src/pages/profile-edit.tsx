@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, ArrowLeft, Copy, Check, Edit3 } from "lucide-react";
+import { Camera, ArrowLeft, Copy, Check, Edit3, LogOut, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 
@@ -90,6 +90,36 @@ export default function ProfileEdit() {
       toast({
         title: "Error",
         description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Logout mutation
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to logout");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.clear();
+      navigate("/login");
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of your account",
+      });
+    },
+    onError: (error) => {
+      console.error("Logout error:", error);
+      toast({
+        title: "Logout failed",
+        description: "Failed to logout. Please try again.",
         variant: "destructive",
       });
     },
@@ -393,9 +423,58 @@ export default function ProfileEdit() {
                 type="submit"
                 disabled={updateProfileMutation.isPending}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+                data-testid="button-save-changes"
               >
                 {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
               </Button>
+            </div>
+
+            {/* Account Management Section */}
+            <div className="border-t pt-6 mt-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Account Management</h3>
+              <div className="space-y-4">
+                {/* Logout Button */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-900">Log out</Label>
+                    <p className="text-sm text-gray-600">Sign out of your BeLen account</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => logoutMutation.mutate()}
+                    disabled={logoutMutation.isPending}
+                    className="flex items-center gap-2"
+                    data-testid="button-logout"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    {logoutMutation.isPending ? "Logging out..." : "Log out"}
+                  </Button>
+                </div>
+
+                {/* Delete Account Button */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium text-red-600">Delete account</Label>
+                    <p className="text-sm text-gray-600">Permanently remove your BeLen account</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    className="flex items-center gap-2"
+                    data-testid="button-delete-account"
+                    onClick={() => {
+                      toast({
+                        title: "Account deletion",
+                        description: "Account deletion functionality will be available soon.",
+                      });
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete account
+                  </Button>
+                </div>
+              </div>
             </div>
 
             {/* Notice Text - YouTube Style */}

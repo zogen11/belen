@@ -63,9 +63,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     name: 'connect.sid', // Explicit session cookie name
     cookie: {
       secure: false, // set to true in production with HTTPS
-      httpOnly: true,
+      httpOnly: false, // Allow JS access for debugging
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      sameSite: 'lax', // Better for cross-site requests
+      sameSite: 'lax', // Allow cross-site cookies
       path: '/', // Ensure cookie is available for all paths
       domain: undefined // Let browser set domain automatically
     }
@@ -196,6 +196,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/auth/me", requireAuth, (req, res) => {
     const { password, ...userWithoutPassword } = req.user!;
     res.json({ user: userWithoutPassword });
+  });
+
+  // Debug endpoint to check session
+  app.get("/api/auth/session-debug", (req, res) => {
+    res.json({
+      sessionID: req.sessionID,
+      sessionData: req.session,
+      cookies: req.headers.cookie,
+      hasUserId: !!req.session?.userId
+    });
   });
 
   // Update user profile

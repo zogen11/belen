@@ -98,6 +98,15 @@ export default function ProfileEdit() {
   // Image upload mutation
   const uploadImageMutation = useMutation({
     mutationFn: async (file: File) => {
+      console.log("Starting profile photo upload...");
+      
+      // Debug session before upload
+      const sessionResponse = await fetch("/api/auth/session-debug", {
+        credentials: "include",
+      });
+      const sessionData = await sessionResponse.json();
+      console.log("Session debug data:", sessionData);
+      
       const formData = new FormData();
       formData.append("profileImage", file);
       
@@ -108,7 +117,9 @@ export default function ProfileEdit() {
       });
       
       if (!response.ok) {
-        throw new Error("Failed to upload image");
+        const errorText = await response.text();
+        console.error("Upload failed with status:", response.status, errorText);
+        throw new Error(`Failed to upload image: ${response.status} ${errorText}`);
       }
       
       return response.json();
@@ -325,6 +336,7 @@ export default function ProfileEdit() {
                 value={`https://www.belen.com/@${user.username}`}
                 readOnly
                 className="text-base border-gray-300 bg-gray-50 text-gray-600"
+                data-testid="input-channel-url"
               />
             </div>
 
@@ -375,8 +387,19 @@ export default function ProfileEdit() {
               </div>
             </div>
 
+            {/* Save Button */}
+            <div className="border-t pt-6 flex justify-end">
+              <Button
+                type="submit"
+                disabled={updateProfileMutation.isPending}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+              >
+                {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+
             {/* Notice Text - YouTube Style */}
-            <div className="border-t pt-4">
+            <div className="border-t pt-4 mt-4">
               <p className="text-xs text-gray-500 flex items-start gap-2">
                 <span className="text-blue-500 mt-0.5">ℹ</span>
                 Changes made to your name and profile picture are visible only on BeLen and not other Google services.

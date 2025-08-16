@@ -78,6 +78,19 @@ Preferred communication style: Simple, everyday language.
 - **Media Processing**: Local file URLs, ready for external storage service integration
 
 ## Recent Changes (August 2025)
+- ✅ **SETTINGS PAGE REDESIGN**: Completely redesigned settings page (August 16, 2025)
+  - Removed Account Settings form (username, email, first name, last name fields)
+  - Added new settings menu with modern clean interface
+  - Added Caption settings for subtitle preferences
+  - Added Accessibility options for screen readers
+  - Added Live Chat Watch on TV for TV viewing configuration
+  - Added Purchase and Membership for subscription management
+  - Added Billing and Payment for payment method management
+  - Added Your Data in BeLen for data management and downloads
+  - Added General settings for app preferences
+  - Added BeLen Terms of Service for policies and guidelines
+  - Maintained existing Account Management section with logout/delete options
+  - All menu items functional with toast notifications
 - ✅ **PROJECT MIGRATION RE-COMPLETED**: Successfully re-migrated from Replit Agent to standard Replit environment (August 16, 2025)
   - Database connection established with PostgreSQL environment variables
   - All dependencies properly installed and configured

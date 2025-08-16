@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Edit, Settings, Camera, Video, Clock, Heart, Eye, DollarSign, Save, X, Plus, Instagram, Youtube, Globe, ExternalLink, History, Bookmark, TrendingUp, Download, ChevronRight, Play, ThumbsUp, HelpCircle, MessageSquare, Info, Shield, Bell, Palette, Monitor, Trash2, Key, Users } from "lucide-react";
+import { Edit, Settings, Camera, Video, Clock, Heart, Eye, DollarSign, Save, X, Plus, Instagram, Youtube, Globe, ExternalLink, History, Bookmark, TrendingUp, Download, ChevronRight, Play, ThumbsUp, HelpCircle, MessageSquare, Info, Shield, Bell, Palette, Monitor, Trash2, Key, Users, BarChart3 } from "lucide-react";
 import { SiTiktok, SiFacebook, SiLinkedin, SiX } from "react-icons/si";
 import Header from "@/components/layout/header";
 import MobileNav from "@/components/layout/mobile-nav";
@@ -187,7 +187,7 @@ export default function Profile() {
                 <div className="relative">
                   {(userData.profileImageUrl || profileImage) ? (
                     <img 
-                      src={profileImage || userData.profileImageUrl} 
+                      src={profileImage || userData.profileImageUrl || ''} 
                       alt="Profile" 
                       className="w-24 h-24 rounded-full object-cover"
                       data-testid="profile-avatar"

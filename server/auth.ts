@@ -42,18 +42,31 @@ export async function authenticateUser(emailOrPhone: string, password: string): 
 }
 
 export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
-  if (!req.session.userId) {
+  console.log('Auth middleware - Session ID:', req.sessionID);
+  console.log('Auth middleware - Session:', req.session);
+  console.log('Auth middleware - User ID:', req.session?.userId);
+  console.log('Auth middleware - Cookie:', req.headers.cookie);
+  
+  if (!req.session || !req.session.userId) {
+    console.log('Authentication failed - no session or userId');
     return res.status(401).json({ error: "Authentication required" });
   }
 
-  const user = await storage.getUser(req.session.userId);
-  if (!user) {
-    req.session.userId = undefined;
-    return res.status(401).json({ error: "User not found" });
-  }
+  try {
+    const user = await storage.getUser(req.session.userId);
+    if (!user) {
+      console.log('Authentication failed - user not found in database');
+      req.session.userId = undefined;
+      return res.status(401).json({ error: "User not found" });
+    }
 
-  req.user = user;
-  next();
+    req.user = user;
+    console.log('Authentication successful for user:', user.id);
+    next();
+  } catch (error) {
+    console.error('Authentication error:', error);
+    return res.status(500).json({ error: "Authentication error" });
+  }
 };
 
 export const optionalAuth = async (req: Request, res: Response, next: NextFunction) => {

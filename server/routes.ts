@@ -52,17 +52,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
+    rolling: true, // Reset expiry on each request
     store: new pgStore({
       conString: process.env.DATABASE_URL,
-      createTableIfMissing: false, // Changed to false since table already exists
-      tableName: 'sessions', // Use existing sessions table from schema
+      createTableIfMissing: true, // Allow creating table if missing
+      tableName: 'sessions',
       ttl: 7 * 24 * 60 * 60, // 7 days in seconds
     }),
     cookie: {
       secure: false, // set to true in production with HTTPS
       httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days instead of 1 day
-      sameSite: 'lax' // Better for cross-site requests
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: 'lax', // Better for cross-site requests
+      path: '/' // Ensure cookie is available for all paths
     }
   }));
 

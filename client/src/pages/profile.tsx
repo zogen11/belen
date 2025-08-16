@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Edit, Settings, Camera, Video, Clock, Heart, Eye, DollarSign, Save, X, Plus, Instagram, Youtube, Globe, ExternalLink, History, Bookmark, TrendingUp, Download, ChevronRight, Play, ThumbsUp, HelpCircle, MessageSquare, Info, Shield, Bell, Palette, Monitor, Trash2, Key, Users, BarChart3 } from "lucide-react";
+import AccountSwitcher from "@/components/account-switcher";
 import { SiTiktok, SiFacebook, SiLinkedin, SiX } from "react-icons/si";
 import Header from "@/components/layout/header";
 import MobileNav from "@/components/layout/mobile-nav";
@@ -40,6 +41,7 @@ export default function Profile() {
   const [newSocialPlatform, setNewSocialPlatform] = useState("");
   const [newSocialUrl, setNewSocialUrl] = useState("");
   const [showSettings, setShowSettings] = useState(false);
+  const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -180,6 +182,16 @@ export default function Profile() {
     });
   };
 
+  const handleSwitchAccount = (accountId: string) => {
+    toast({
+      title: "Account switched",
+      description: "Successfully switched to selected account",
+    });
+    // In a real app, this would update the authentication context
+    queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+    navigate("/");
+  };
+
   const formatEarnings = (cents: number) => {
     return `$${(cents / 100).toFixed(2)}`;
   };
@@ -256,14 +268,7 @@ export default function Profile() {
                     variant="outline" 
                     size="sm" 
                     data-testid="button-switch-account"
-                    onClick={() => {
-                      toast({
-                        title: "Switch Account",
-                        description: "Log in to a different BeLen account",
-                      });
-                      // Sign out current user and redirect to login
-                      window.location.href = '/login';
-                    }}
+                    onClick={() => setShowAccountSwitcher(true)}
                   >
                     Switch account
                   </Button>
@@ -1031,6 +1036,13 @@ export default function Profile() {
           
         </DialogContent>
       </Dialog>
+
+      {/* Account Switcher Dialog */}
+      <AccountSwitcher 
+        isOpen={showAccountSwitcher}
+        onClose={() => setShowAccountSwitcher(false)}
+        onSwitchAccount={handleSwitchAccount}
+      />
       
       <MobileNav />
     </div>

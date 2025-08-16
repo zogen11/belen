@@ -78,6 +78,15 @@ Preferred communication style: Simple, everyday language.
 - **Media Processing**: Local file URLs, ready for external storage service integration
 
 ## Recent Changes (August 2025)
+- ✅ **YOUTUBE-STYLE ACCOUNT SWITCHER**: Implemented multi-account switching functionality (August 16, 2025)
+  - Created AccountSwitcher component with YouTube-style interface
+  - Shows active account with checkmark and account details
+  - Lists other available accounts with profile pictures and names
+  - Added "Add another account" and "Manage accounts" options
+  - Integrated with profile page Switch Account button
+  - Mock data for 8+ sample accounts demonstrating functionality
+  - Toast notifications for successful account switching
+  - Proper dialog UI with account management options
 - ✅ **SETTINGS PAGE REDESIGN**: Completely redesigned settings page (August 16, 2025)
   - Removed Account Settings form (username, email, first name, last name fields)
   - Added new settings menu with modern clean interface

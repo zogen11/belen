@@ -31,7 +31,7 @@ import {
   earningsHistory
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, count } from "drizzle-orm";
+import { eq, desc, and, count, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -102,8 +102,15 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  constructor() {
+    if (!db) {
+      throw new Error("Database not initialized. Cannot use DatabaseStorage without DATABASE_URL.");
+    }
+  }
+
   // User methods
   async getUser(id: string): Promise<User | undefined> {
+    if (!db) throw new Error("Database not available");
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
@@ -553,9 +560,12 @@ export class MemStorage implements IStorage {
       phone: insertUser.phone || null,
       firstName: insertUser.firstName || null,
       lastName: insertUser.lastName || null,
+      description: insertUser.description || null,
       profileImageUrl: null,
       isEmailVerified: false,
       isPhoneVerified: false,
+      isPrivate: insertUser.isPrivate || false,
+      allowComments: insertUser.allowComments || true,
       followers: 0, 
       following: 0, 
       totalEarnings: 0,
@@ -804,7 +814,5 @@ export class MemStorage implements IStorage {
   }
 }
 
-// Import sql for database operations
-import { sql } from "drizzle-orm";
-
-export const storage = new DatabaseStorage();
+// Use database storage if available, otherwise fallback to memory storage
+export const storage = process.env.DATABASE_URL ? new DatabaseStorage() : new MemStorage();

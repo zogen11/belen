@@ -47,27 +47,40 @@ const upload = multer({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
-  // Setup session management with PostgreSQL store
-  const pgStore = connectPg(session);
+  // Setup session management with PostgreSQL store if available, otherwise use memory store
+  const MemStoreConstructor = MemoryStore(session);
+  
+  let sessionStore;
+  if (process.env.DATABASE_URL) {
+    const pgStore = connectPg(session);
+    sessionStore = new pgStore({
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: true,
+      tableName: 'sessions',
+      ttl: 7 * 24 * 60 * 60, // 7 days in seconds
+    });
+    console.log("✓ Using PostgreSQL session store");
+  } else {
+    sessionStore = new MemStoreConstructor({
+      checkPeriod: 86400000 // 24 hours
+    });
+    console.log("⚠ Using memory session store (data will not persist)");
+  }
+
   app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
     resave: false,
-    saveUninitialized: true, // Change to true to create session before login
-    rolling: true, // Reset expiry on each request
-    store: new pgStore({
-      conString: process.env.DATABASE_URL,
-      createTableIfMissing: true, // Allow creating table if missing
-      tableName: 'sessions',
-      ttl: 7 * 24 * 60 * 60, // 7 days in seconds
-    }),
-    name: 'connect.sid', // Explicit session cookie name
+    saveUninitialized: true,
+    rolling: true,
+    store: sessionStore,
+    name: 'connect.sid',
     cookie: {
       secure: false, // set to true in production with HTTPS
       httpOnly: false, // Allow JS access for debugging
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      sameSite: 'lax', // Allow cross-site cookies
-      path: '/', // Ensure cookie is available for all paths
-      domain: undefined // Let browser set domain automatically
+      sameSite: 'lax',
+      path: '/',
+      domain: undefined
     }
   }));
 

@@ -52,7 +52,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true, // Change to true to create session before login
     rolling: true, // Reset expiry on each request
     store: new pgStore({
       conString: process.env.DATABASE_URL,
@@ -148,24 +148,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
-      // Create session and save it
-      req.session.userId = user.id;
-      console.log('Login - Setting session userId:', user.id);
-      console.log('Login - Session ID:', req.sessionID);
-      
-      // Save session before responding
-      req.session.save((err) => {
+      // Regenerate session for security and ensure it's persisted
+      req.session.regenerate((err) => {
         if (err) {
-          console.error("Session save error:", err);
+          console.error("Session regeneration error:", err);
           return res.status(500).json({ error: "Session error" });
         }
         
-        console.log('Login - Session saved successfully for user:', user.id);
-        console.log('Login - Session after save:', JSON.stringify(req.session, null, 2));
+        // Set userId in the new session
+        req.session.userId = user.id;
+        console.log('Login - Setting session userId:', user.id);
+        console.log('Login - Session ID:', req.sessionID);
         
-        // Return user without password
-        const { password, ...userWithoutPassword } = user;
-        res.json({ user: userWithoutPassword });
+        // Save the session
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error("Session save error:", saveErr);
+            return res.status(500).json({ error: "Session save error" });
+          }
+          
+          console.log('Login - Session saved successfully for user:', user.id);
+          console.log('Login - Session after save:', JSON.stringify(req.session, null, 2));
+          
+          // Return user without password
+          const { password, ...userWithoutPassword } = user;
+          res.json({ user: userWithoutPassword });
+        });
       });
     } catch (error) {
       if (error instanceof z.ZodError) {

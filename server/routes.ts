@@ -60,12 +60,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       tableName: 'sessions',
       ttl: 7 * 24 * 60 * 60, // 7 days in seconds
     }),
+    name: 'connect.sid', // Explicit session cookie name
     cookie: {
       secure: false, // set to true in production with HTTPS
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       sameSite: 'lax', // Better for cross-site requests
-      path: '/' // Ensure cookie is available for all paths
+      path: '/', // Ensure cookie is available for all paths
+      domain: undefined // Let browser set domain automatically
     }
   }));
 

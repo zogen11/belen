@@ -43,25 +43,31 @@ export async function authenticateUser(emailOrPhone: string, password: string): 
 
 export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   console.log('Auth middleware - Session ID:', req.sessionID);
-  console.log('Auth middleware - Session:', req.session);
+  console.log('Auth middleware - Session data:', JSON.stringify(req.session, null, 2));
   console.log('Auth middleware - User ID:', req.session?.userId);
-  console.log('Auth middleware - Cookie:', req.headers.cookie);
+  console.log('Auth middleware - All Cookies:', req.headers.cookie);
   
-  if (!req.session || !req.session.userId) {
-    console.log('Authentication failed - no session or userId');
+  // Check if session exists and has userId
+  if (!req.session) {
+    console.log('Authentication failed - no session object');
+    return res.status(401).json({ error: "Authentication required" });
+  }
+  
+  if (!req.session.userId) {
+    console.log('Authentication failed - no userId in session');
     return res.status(401).json({ error: "Authentication required" });
   }
 
   try {
     const user = await storage.getUser(req.session.userId);
     if (!user) {
-      console.log('Authentication failed - user not found in database');
+      console.log('Authentication failed - user not found in database for ID:', req.session.userId);
       req.session.userId = undefined;
       return res.status(401).json({ error: "User not found" });
     }
 
     req.user = user;
-    console.log('Authentication successful for user:', user.id);
+    console.log('Authentication successful for user:', user.id, user.username);
     next();
   } catch (error) {
     console.error('Authentication error:', error);

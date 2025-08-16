@@ -8,11 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export default function WatchLater() {
-  const { data: videos = [] } = useQuery({
+  const { data: videos = [] } = useQuery<any[]>({
     queryKey: ['/api/videos'],
   });
 
-  const { data: shorts = [] } = useQuery({
+  const { data: shorts = [] } = useQuery<any[]>({
     queryKey: ['/api/shorts'],
   });
 

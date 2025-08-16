@@ -12,6 +12,7 @@ import fs from "fs";
 import { hashPassword, authenticateUser, requireAuth, optionalAuth } from "./auth";
 import MemoryStore from "memorystore";
 import connectPg from "connect-pg-simple";
+import { seedDatabase } from "./seed-data";
 
 // Configure multer for file uploads
 const uploadDir = path.join(process.cwd(), "uploads");
@@ -523,6 +524,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching earnings:", error);
       res.status(500).json({ error: "Failed to fetch earnings data" });
+    }
+  });
+
+  // Seed database with sample data (development only)
+  app.post("/api/seed", async (req, res) => {
+    try {
+      if (process.env.NODE_ENV === "production") {
+        return res.status(403).json({ error: "Seeding not allowed in production" });
+      }
+      
+      await seedDatabase();
+      res.json({ message: "Database seeded successfully" });
+    } catch (error) {
+      console.error("Error seeding database:", error);
+      res.status(500).json({ error: "Failed to seed database" });
     }
   });
 

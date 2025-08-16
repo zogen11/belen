@@ -17,6 +17,8 @@ import VideoWatch from "@/pages/video-watch";
 import ShortsWatch from "@/pages/shorts-watch";
 import LoginPage from "@/pages/login";
 import SignupPage from "@/pages/signup";
+import HistoryPage from "@/pages/history";
+import WatchLater from "@/pages/watch-later";
 
 function ProtectedRoute({ component: Component, ...rest }: { component: React.ComponentType }) {
   const { isAuthenticated } = useAuth();
@@ -56,6 +58,8 @@ function Router() {
       <Route path="/earnings" component={() => <ProtectedRoute component={Earnings} />} />
       <Route path="/profile" component={() => <ProtectedRoute component={Profile} />} />
       <Route path="/profile-edit" component={() => <ProtectedRoute component={ProfileEdit} />} />
+      <Route path="/history" component={() => <ProtectedRoute component={HistoryPage} />} />
+      <Route path="/watch-later" component={() => <ProtectedRoute component={WatchLater} />} />
       
       <Route component={NotFound} />
     </Switch>

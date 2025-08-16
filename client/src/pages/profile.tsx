@@ -591,50 +591,145 @@ export default function Profile() {
           <ScrollArea className="max-h-[70vh] pr-4">
             <div className="space-y-6">
               
-              {/* Account Settings */}
+              {/* Caption Settings */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                     onClick={() => toast({ title: "Caption Settings", description: "Configure caption preferences" })}>
+                  <div>
+                    <p className="font-medium">Caption</p>
+                    <p className="text-sm text-gray-500">Subtitle and caption preferences</p>
+                  </div>
+                  <div className="text-gray-400">›</div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Accessibility */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                     onClick={() => toast({ title: "Accessibility", description: "Accessibility options coming soon" })}>
+                  <div>
+                    <p className="font-medium">Accessibility</p>
+                    <p className="text-sm text-gray-500">Screen reader and accessibility options</p>
+                  </div>
+                  <div className="text-gray-400">›</div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Live Chat Watch on TV */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                     onClick={() => toast({ title: "Live Chat Watch on TV", description: "TV viewing options coming soon" })}>
+                  <div>
+                    <p className="font-medium">Live Chat Watch on TV</p>
+                    <p className="text-sm text-gray-500">Configure TV viewing and live chat settings</p>
+                  </div>
+                  <div className="text-gray-400">›</div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Purchase and Membership */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                     onClick={() => toast({ title: "Purchase and Membership", description: "Manage your subscriptions and purchases" })}>
+                  <div>
+                    <p className="font-medium">Purchase and Membership</p>
+                    <p className="text-sm text-gray-500">Subscriptions, purchases, and premium features</p>
+                  </div>
+                  <div className="text-gray-400">›</div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Billing and Payment */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                     onClick={() => toast({ title: "Billing and Payment", description: "Manage payment methods and billing" })}>
+                  <div>
+                    <p className="font-medium">Billing and Payment</p>
+                    <p className="text-sm text-gray-500">Payment methods, invoices, and billing history</p>
+                  </div>
+                  <div className="text-gray-400">›</div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Your Data in BeLen */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                     onClick={() => toast({ title: "Your Data in BeLen", description: "Manage your data and downloads" })}>
+                  <div>
+                    <p className="font-medium">Your Data in BeLen</p>
+                    <p className="text-sm text-gray-500">Download your data, manage data usage</p>
+                  </div>
+                  <div className="text-gray-400">›</div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* General */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                     onClick={() => toast({ title: "General Settings", description: "General app preferences" })}>
+                  <div>
+                    <p className="font-medium">General</p>
+                    <p className="text-sm text-gray-500">Language, region, and general preferences</p>
+                  </div>
+                  <div className="text-gray-400">›</div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* BeLen Terms of Service */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                     onClick={() => toast({ title: "BeLen Terms of Service", description: "View terms and policies" })}>
+                  <div>
+                    <p className="font-medium">BeLen Terms of Service</p>
+                    <p className="text-sm text-gray-500">Privacy policy, terms of use, and community guidelines</p>
+                  </div>
+                  <div className="text-gray-400">›</div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Account Management */}
               <div className="space-y-4">
                 <h3 className="font-semibold flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  Account Settings
+                  <Shield className="w-4 h-4" />
+                  Account Management
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-3">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
-                      <label className="text-sm font-medium">Username</label>
-                      <Input
-                        value={userData.username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        placeholder="Your username"
-                        data-testid="input-settings-username"
-                      />
+                      <p className="font-medium">Log out</p>
+                      <p className="text-sm text-gray-500">Sign out of your BeLen account</p>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium">Email</label>
-                      <Input
-                        value={userData.email}
-                        disabled
-                        className="bg-gray-50"
-                        data-testid="input-settings-email"
-                      />
-                    </div>
+                    <Button variant="outline" size="sm" data-testid="button-logout"
+                            onClick={() => toast({ title: "Logged out", description: "Account logout functionality" })}>
+                      Log out
+                    </Button>
                   </div>
-                  <div className="space-y-3">
+                  
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
-                      <label className="text-sm font-medium">First Name</label>
-                      <Input
-                        value={userData.firstName}
-                        placeholder="First name"
-                        data-testid="input-settings-firstname"
-                      />
+                      <p className="font-medium text-red-600">Delete account</p>
+                      <p className="text-sm text-gray-500">Permanently remove your BeLen account</p>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium">Last Name</label>
-                      <Input
-                        value={userData.lastName}
-                        placeholder="Last name"
-                        data-testid="input-settings-lastname"
-                      />
-                    </div>
+                    <Button variant="destructive" size="sm" data-testid="button-delete-account"
+                            onClick={() => toast({ title: "Account deletion", description: "Account deletion functionality will be available soon." })}>
+                      Delete account
+                    </Button>
                   </div>
                 </div>
               </div>

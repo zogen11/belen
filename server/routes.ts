@@ -542,6 +542,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Placeholder image endpoint
+  app.get("/api/placeholder/:width/:height", (req, res) => {
+    const { width, height } = req.params;
+    const svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100%" height="100%" fill="#f0f0f0"/>
+      <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="14" fill="#999" text-anchor="middle" dy=".3em">${width}x${height}</text>
+    </svg>`;
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.send(svg);
+  });
+
+  // Placeholder video endpoint
+  app.get("/api/placeholder/video/:filename", (req, res) => {
+    res.setHeader('Content-Type', 'video/mp4');
+    res.setHeader('Content-Length', '0');
+    res.status(204).send();
+  });
+
   // Get trending creators
   app.get("/api/trending-creators", async (req, res) => {
     try {

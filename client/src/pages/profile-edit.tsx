@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, ArrowLeft, Copy, Check } from "lucide-react";
+import { Camera, ArrowLeft, Copy, Check, Edit3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 
@@ -178,219 +178,209 @@ export default function ProfileEdit() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
+    <div className="min-h-screen bg-gray-50">
+      {/* YouTube-style Header */}
+      <div className="bg-white border-b shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate("/profile")}
+            className="hover:bg-gray-100"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold">Channel settings</h1>
+          <h1 className="text-xl font-medium text-gray-900">Channel settings</h1>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
-        {/* Profile Banner & Photo Section */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            {/* Banner Background */}
-            <div className="relative h-32 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg mb-8 overflow-hidden">
-              <div className="absolute inset-0 bg-black/20"></div>
-              <div className="absolute top-4 right-4">
-                <Button variant="secondary" size="icon" className="bg-white/20 hover:bg-white/30">
-                  <Camera className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              {/* Profile Picture */}
-              <div className="absolute -bottom-12 left-6">
-                <div className="relative">
-                  <Avatar className="h-24 w-24 border-4 border-background">
-                    <AvatarImage src={user.profileImageUrl} alt={user.username} />
-                    <AvatarFallback className="text-lg">
-                      {user.firstName?.[0]}{user.lastName?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    className="absolute -bottom-1 -right-1 h-8 w-8 bg-white/90 hover:bg-white"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploadingImage}
-                  >
-                    <Camera className="h-4 w-4" />
-                  </Button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* YouTube-style Banner Section */}
+        <div className="bg-white rounded-lg shadow-sm mb-6 overflow-hidden">
+          {/* Banner Background - Exactly like YouTube */}
+          <div className="relative h-48 bg-gradient-to-r from-blue-400 via-blue-500 to-cyan-500">
+            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="absolute bottom-6 left-6 text-white">
+              <h2 className="text-3xl font-medium">{user.firstName} {user.lastName}</h2>
+              <p className="text-blue-100 text-sm mt-1">Just in time for the family reunion!</p>
+            </div>
+            
+            {/* Banner Edit Button */}
+            <div className="absolute top-4 right-4">
+              <Button 
+                variant="secondary" 
+                size="icon" 
+                className="bg-black/20 hover:bg-black/30 border-0 text-white"
+              >
+                <Camera className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            {/* Profile Picture - Overlapping banner */}
+            <div className="absolute -bottom-12 left-6">
+              <div className="relative">
+                <div className="w-24 h-24 rounded-full border-4 border-white bg-white shadow-lg overflow-hidden">
+                  {user.profileImageUrl ? (
+                    <img 
+                      src={user.profileImageUrl} 
+                      alt={user.username} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                      <span className="text-white text-lg font-medium">
+                        {user.firstName?.[0]}{user.lastName?.[0]}
+                      </span>
+                    </div>
+                  )}
                 </div>
+                <Button
+                  size="icon"
+                  className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-white border-2 border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingImage}
+                >
+                  <Camera className="h-3 w-3" />
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Profile Form */}
+          {/* Profile Details Section */}
+          <div className="pt-16 px-6 pb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-medium text-gray-900">{user.firstName} {user.lastName}</h3>
+                <p className="text-gray-600 text-sm">@{user.username}</p>
+                <p className="text-gray-600 text-sm">{user.followers?.toLocaleString()} subscribers • {user.following} videos</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* YouTube-style Form Fields */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    value={formData.firstName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    value={formData.lastName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                    className="mt-1"
-                  />
-                </div>
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            {/* Name Field - YouTube Style */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-sm font-medium text-gray-900">Name</Label>
+                <Button variant="ghost" size="icon" className="h-6 w-6">
+                  <Edit3 className="h-3 w-3" />
+                </Button>
               </div>
+              <Input
+                value={`${formData.firstName} ${formData.lastName}`}
+                onChange={(e) => {
+                  const names = e.target.value.split(' ');
+                  setFormData(prev => ({ 
+                    ...prev, 
+                    firstName: names[0] || '', 
+                    lastName: names.slice(1).join(' ') || '' 
+                  }));
+                }}
+                className="text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
 
-              <div>
-                <Label htmlFor="username">Handle</Label>
-                <div className="flex items-center mt-1">
-                  <span className="text-muted-foreground mr-2">@</span>
-                  <Input
-                    id="username"
-                    value={formData.username}
-                    onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                    placeholder="your_handle"
-                  />
-                </div>
+            {/* Handle Field - YouTube Style */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-sm font-medium text-gray-900">Handle</Label>
+                <Button variant="ghost" size="icon" className="h-6 w-6">
+                  <Edit3 className="h-3 w-3" />
+                </Button>
               </div>
+              <Input
+                value={`@${formData.username}`}
+                onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value.replace('@', '') }))}
+                className="text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              />
+            </div>
 
-              <div>
-                <Label htmlFor="channelUrl">Channel URL</Label>
-                <div className="flex items-center gap-2 mt-1">
-                  <Input
-                    id="channelUrl"
-                    value={`${window.location.origin}/profile/${user.username}`}
-                    readOnly
-                    className="bg-muted"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={handleCopyUrl}
-                  >
-                    {copiedUrl ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                  </Button>
-                </div>
+            {/* Channel URL Field - YouTube Style */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-sm font-medium text-gray-900">Channel URL</Label>
+                <Button 
+                  type="button"
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-6 w-6"
+                  onClick={handleCopyUrl}
+                >
+                  {copiedUrl ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                </Button>
               </div>
+              <Input
+                value={`https://www.belen.com/@${user.username}`}
+                readOnly
+                className="text-base border-gray-300 bg-gray-50 text-gray-600"
+              />
+            </div>
 
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Tell viewers about your channel. Your description will appear in your channel page and search results."
-                  className="mt-1 min-h-[100px]"
-                  maxLength={1000}
-                />
-                <p className="text-sm text-muted-foreground mt-1">
-                  {formData.description.length}/1000 characters
-                </p>
+            {/* Description Field - YouTube Style */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-sm font-medium text-gray-900">Description</Label>
+                <Button variant="ghost" size="icon" className="h-6 w-6">
+                  <Edit3 className="h-3 w-3" />
+                </Button>
               </div>
-            </CardContent>
-          </Card>
+              <Textarea
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="LET'S SING TOGETHER GUYS, (SONG TITLE - LOVE ME LIKE YOU DO)..."
+                className="text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500 min-h-[80px] resize-none"
+                maxLength={1000}
+              />
+            </div>
 
-          {/* Privacy Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Privacy</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+            {/* My Community Toggle - YouTube Style */}
+            <div className="mb-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="privacy">Make channel private</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Only approved followers can see your content
-                  </p>
+                  <Label className="text-sm font-medium text-gray-900">My Community</Label>
+                  <p className="text-sm text-gray-600">Viewers can post</p>
                 </div>
                 <Switch
-                  id="privacy"
-                  checked={formData.isPrivate}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPrivate: checked }))}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="comments">Allow comments</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Viewers can comment on your content
-                  </p>
-                </div>
-                <Switch
-                  id="comments"
                   checked={formData.allowComments}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, allowComments: checked }))}
+                  className="data-[state=checked]:bg-blue-600"
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Account Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Channel Statistics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-3 gap-4 text-center">
+            {/* Privacy Toggle - YouTube Style */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-primary">{user.followers}</p>
-                  <p className="text-sm text-muted-foreground">Followers</p>
+                  <Label className="text-sm font-medium text-gray-900">Privacy</Label>
+                  <p className="text-sm text-gray-600">Keep all my subscriptions private</p>
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-primary">{user.following}</p>
-                  <p className="text-sm text-muted-foreground">Following</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-green-600">${user.totalEarnings}</p>
-                  <p className="text-sm text-muted-foreground">Total Earnings</p>
-                </div>
+                <Switch
+                  checked={formData.isPrivate}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPrivate: checked }))}
+                  className="data-[state=checked]:bg-gray-900"
+                />
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* Save Button */}
-          <div className="flex justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate("/profile")}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={updateProfileMutation.isPending}
-              className="min-w-[100px]"
-            >
-              {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
-            </Button>
+            {/* Notice Text - YouTube Style */}
+            <div className="border-t pt-4">
+              <p className="text-xs text-gray-500 flex items-start gap-2">
+                <span className="text-blue-500 mt-0.5">ℹ</span>
+                Changes made to your name and profile picture are visible only on YouTube and not other Google services.
+                <span className="text-blue-500 underline cursor-pointer">Learn more</span>
+              </p>
+            </div>
           </div>
         </form>
       </div>

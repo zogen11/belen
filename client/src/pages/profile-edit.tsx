@@ -261,7 +261,7 @@ export default function ProfileEdit() {
               <div>
                 <h3 className="text-xl font-medium text-gray-900">{user.firstName} {user.lastName}</h3>
                 <p className="text-gray-600 text-sm">@{user.username}</p>
-                <p className="text-gray-600 text-sm">{user.followers?.toLocaleString()} subscribers • {user.following} videos</p>
+                <p className="text-gray-600 text-sm">{user.followers?.toLocaleString()} followers • {user.following} following</p>
               </div>
             </div>
           </div>
@@ -339,7 +339,7 @@ export default function ProfileEdit() {
               <Textarea
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="LET'S SING TOGETHER GUYS, (SONG TITLE - LOVE ME LIKE YOU DO)..."
+                placeholder="Describe here"
                 className="text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500 min-h-[80px] resize-none"
                 maxLength={1000}
               />
@@ -379,7 +379,7 @@ export default function ProfileEdit() {
             <div className="border-t pt-4">
               <p className="text-xs text-gray-500 flex items-start gap-2">
                 <span className="text-blue-500 mt-0.5">ℹ</span>
-                Changes made to your name and profile picture are visible only on YouTube and not other Google services.
+                Changes made to your name and profile picture are visible only on BeLen and not other Google services.
                 <span className="text-blue-500 underline cursor-pointer">Learn more</span>
               </p>
             </div>

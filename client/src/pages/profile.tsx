@@ -121,7 +121,13 @@ export default function Profile() {
         const response = await fetch('/api/auth/profile/photo', {
           method: 'POST',
           body: formData,
+          credentials: 'include', // Include session cookies for authentication
         });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Upload failed');
+        }
         
         const data = await response.json();
         
@@ -150,10 +156,13 @@ export default function Profile() {
           // Also invalidate to get fresh data from server
           queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
         }
-      } catch (error) {
+      } catch (error: any) {
+        console.error('Profile photo upload error:', error);
         toast({
           title: "Error uploading photo",
-          description: "Please try again with a different image.",
+          description: error.message === 'Authentication required' 
+            ? "Please log in again and try uploading your photo." 
+            : "Please try again with a different image.",
           variant: "destructive",
         });
       }

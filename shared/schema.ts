@@ -23,8 +23,11 @@ export const users = pgTable("users", {
   firstName: text("first_name"),
   lastName: text("last_name"),
   profileImageUrl: text("profile_image_url"),
+  description: text("description"),
   isEmailVerified: boolean("is_email_verified").default(false),
   isPhoneVerified: boolean("is_phone_verified").default(false),
+  isPrivate: boolean("is_private").default(false),
+  allowComments: boolean("allow_comments").default(true),
   followers: integer("followers").default(0),
   following: integer("following").default(0),
   totalEarnings: integer("total_earnings").default(0), // in cents

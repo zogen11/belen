@@ -72,6 +72,7 @@ export default function ProfileEdit() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
+        credentials: "include",
       });
       if (!response.ok) {
         throw new Error("Failed to update profile");
@@ -103,6 +104,7 @@ export default function ProfileEdit() {
       const response = await fetch("/api/auth/profile/photo", {
         method: "POST",
         body: formData,
+        credentials: "include",
       });
       
       if (!response.ok) {

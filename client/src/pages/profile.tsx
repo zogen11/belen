@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Edit, Settings, Camera, Video, Clock, Heart, Eye, DollarSign, Save, X, Plus, Instagram, Youtube, Globe, ExternalLink, History, Bookmark, TrendingUp, Download, ChevronRight, Play, ThumbsUp } from "lucide-react";
+import { Edit, Settings, Camera, Video, Clock, Heart, Eye, DollarSign, Save, X, Plus, Instagram, Youtube, Globe, ExternalLink, History, Bookmark, TrendingUp, Download, ChevronRight, Play, ThumbsUp, HelpCircle, MessageSquare, Info, Shield, Bell, Palette, Monitor, Trash2, Key, Users } from "lucide-react";
 import { SiTiktok, SiFacebook, SiLinkedin, SiX } from "react-icons/si";
 import Header from "@/components/layout/header";
 import MobileNav from "@/components/layout/mobile-nav";
@@ -37,6 +37,7 @@ export default function Profile() {
   ]);
   const [newSocialPlatform, setNewSocialPlatform] = useState("");
   const [newSocialUrl, setNewSocialUrl] = useState("");
+  const [showSettings, setShowSettings] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -251,18 +252,11 @@ export default function Profile() {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    data-testid="button-google-account"
-                    onClick={() => {
-                      toast({
-                        title: "Account Settings",
-                        description: "Manage your BeLen account settings",
-                      });
-                      // Navigate to account settings
-                      window.location.href = '/settings';
-                    }}
+                    data-testid="button-settings"
+                    onClick={() => setShowSettings(true)}
                   >
                     <Settings className="w-4 h-4 mr-2" />
-                    Account Settings
+                    Settings
                   </Button>
                   <Button 
                     variant="outline" 
@@ -565,6 +559,366 @@ export default function Profile() {
 
         </div>
       </div>
+      
+      {/* Settings Modal */}
+      <Dialog open={showSettings} onOpenChange={setShowSettings}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5" />
+              Settings
+            </DialogTitle>
+          </DialogHeader>
+          
+          <ScrollArea className="max-h-[70vh] pr-4">
+            <div className="space-y-6">
+              
+              {/* Account Settings */}
+              <div className="space-y-4">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Account Settings
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium">Username</label>
+                      <Input
+                        value={userData.username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Your username"
+                        data-testid="input-settings-username"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Email</label>
+                      <Input
+                        value={userData.email}
+                        disabled
+                        className="bg-gray-50"
+                        data-testid="input-settings-email"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium">First Name</label>
+                      <Input
+                        value={userData.firstName}
+                        placeholder="First name"
+                        data-testid="input-settings-firstname"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Last Name</label>
+                      <Input
+                        value={userData.lastName}
+                        placeholder="Last name"
+                        data-testid="input-settings-lastname"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Privacy & Security */}
+              <div className="space-y-4">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <Shield className="w-4 h-4" />
+                  Privacy & Security
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Change Password</p>
+                      <p className="text-sm text-gray-500">Update your account password</p>
+                    </div>
+                    <Button variant="outline" size="sm" data-testid="button-change-password">
+                      <Key className="w-4 h-4 mr-2" />
+                      Change
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Two-Factor Authentication</p>
+                      <p className="text-sm text-gray-500">Add extra security to your account</p>
+                    </div>
+                    <Button variant="outline" size="sm" data-testid="button-2fa">
+                      Enable
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Privacy Settings</p>
+                      <p className="text-sm text-gray-500">Control who can see your content and data</p>
+                    </div>
+                    <Button variant="outline" size="sm" data-testid="button-privacy">
+                      Manage
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Notifications */}
+              <div className="space-y-4">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <Bell className="w-4 h-4" />
+                  Notifications
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Email Notifications</p>
+                      <p className="text-sm text-gray-500">Get updates about your content and earnings</p>
+                    </div>
+                    <Button variant="outline" size="sm" data-testid="button-email-notifications">
+                      Configure
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Push Notifications</p>
+                      <p className="text-sm text-gray-500">Browser and mobile notifications</p>
+                    </div>
+                    <Button variant="outline" size="sm" data-testid="button-push-notifications">
+                      Configure
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Appearance */}
+              <div className="space-y-4">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <Palette className="w-4 h-4" />
+                  Appearance
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Theme</p>
+                      <p className="text-sm text-gray-500">Choose light, dark, or system theme</p>
+                    </div>
+                    <Select defaultValue="system">
+                      <SelectTrigger className="w-32" data-testid="select-theme">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="light">Light</SelectItem>
+                        <SelectItem value="dark">Dark</SelectItem>
+                        <SelectItem value="system">System</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Display Quality</p>
+                      <p className="text-sm text-gray-500">Choose video quality preferences</p>
+                    </div>
+                    <Select defaultValue="auto">
+                      <SelectTrigger className="w-32" data-testid="select-quality">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="auto">Auto</SelectItem>
+                        <SelectItem value="1080p">1080p</SelectItem>
+                        <SelectItem value="720p">720p</SelectItem>
+                        <SelectItem value="480p">480p</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Advanced Tools */}
+              <div className="space-y-4">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <Monitor className="w-4 h-4" />
+                  Advanced Tools
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Creator Analytics</p>
+                      <p className="text-sm text-gray-500">Advanced insights and revenue tracking</p>
+                    </div>
+                    <Button variant="outline" size="sm" data-testid="button-analytics"
+                      onClick={() => window.location.href = '/analytics'}
+                    >
+                      <BarChart3 className="w-4 h-4 mr-2" />
+                      Open
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Content Management</p>
+                      <p className="text-sm text-gray-500">Batch edit, organize, and schedule content</p>
+                    </div>
+                    <Button variant="outline" size="sm" data-testid="button-content-management">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Manage
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Data Export</p>
+                      <p className="text-sm text-gray-500">Download your content, analytics, and earnings data</p>
+                    </div>
+                    <Button variant="outline" size="sm" data-testid="button-data-export">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">API Access</p>
+                      <p className="text-sm text-gray-500">Generate API keys for third-party integrations</p>
+                    </div>
+                    <Button variant="outline" size="sm" data-testid="button-api-access">
+                      <Key className="w-4 h-4 mr-2" />
+                      Manage
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Help & Support */}
+              <div className="space-y-4">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <HelpCircle className="w-4 h-4" />
+                  Help & Support
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Help Center</p>
+                      <p className="text-sm text-gray-500">Find answers to common questions</p>
+                    </div>
+                    <Button variant="outline" size="sm" data-testid="button-help-center">
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Visit
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Send Feedback</p>
+                      <p className="text-sm text-gray-500">Report bugs or suggest improvements</p>
+                    </div>
+                    <Button variant="outline" size="sm" data-testid="button-send-feedback">
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      Send
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Contact Support</p>
+                      <p className="text-sm text-gray-500">Get help from our support team</p>
+                    </div>
+                    <Button variant="outline" size="sm" data-testid="button-contact-support">
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      Contact
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* About */}
+              <div className="space-y-4">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <Info className="w-4 h-4" />
+                  About BeLen
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Version</p>
+                      <p className="text-sm text-gray-500">BeLen Platform v2.1.0</p>
+                    </div>
+                    <Badge variant="secondary">Latest</Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Terms of Service</p>
+                      <p className="text-sm text-gray-500">Read our terms and conditions</p>
+                    </div>
+                    <Button variant="outline" size="sm" data-testid="button-terms">
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      View
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">Privacy Policy</p>
+                      <p className="text-sm text-gray-500">How we handle your data</p>
+                    </div>
+                    <Button variant="outline" size="sm" data-testid="button-privacy-policy">
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      View
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Danger Zone */}
+              <div className="space-y-4">
+                <h3 className="font-semibold flex items-center gap-2 text-red-600">
+                  <Trash2 className="w-4 h-4" />
+                  Danger Zone
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 border border-red-200 rounded-lg bg-red-50">
+                    <div>
+                      <p className="font-medium text-red-900">Delete Account</p>
+                      <p className="text-sm text-red-600">Permanently delete your account and all data</p>
+                    </div>
+                    <Button variant="destructive" size="sm" data-testid="button-delete-account">
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </ScrollArea>
+          
+          <div className="flex justify-end gap-2 pt-4 border-t">
+            <Button variant="outline" onClick={() => setShowSettings(false)} data-testid="button-cancel-settings">
+              Cancel
+            </Button>
+            <Button onClick={handleSaveProfile} data-testid="button-save-settings">
+              Save Changes
+            </Button>
+          </div>
+          
+        </DialogContent>
+      </Dialog>
+      
       <MobileNav />
     </div>
   );

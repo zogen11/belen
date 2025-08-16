@@ -1,14 +1,11 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, ArrowLeft, Copy, Check, Edit3, LogOut, Trash2 } from "lucide-react";
+import { Camera, ArrowLeft, LogOut, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 
@@ -32,68 +29,13 @@ export default function ProfileEdit() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [copiedUrl, setCopiedUrl] = useState(false);
 
   // Get current user profile
   const { data: user, isLoading } = useQuery<UserProfile>({
     queryKey: ["/api/auth/me"],
   });
 
-  // Form state
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    username: "",
-    description: "",
-    isPrivate: false,
-    allowComments: true,
-  });
 
-  // Update form when user data loads
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        firstName: user.firstName || "",
-        lastName: user.lastName || "",
-        username: user.username || "",
-        description: user.description || "",
-        isPrivate: user.isPrivate || false,
-        allowComments: user.allowComments !== false,
-      });
-    }
-  }, [user]);
-
-  // Profile update mutation
-  const updateProfileMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await fetch(`/api/auth/profile`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to update profile");
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully updated.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
 
   // Logout mutation
   const logoutMutation = useMutation({
@@ -308,185 +250,191 @@ export default function ProfileEdit() {
           </div>
         </div>
 
-        {/* YouTube-style Form Fields */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Settings Menu - Clean Modern Style */}
+        <div className="space-y-4">
+          {/* Privacy & Security */}
+          <div className="bg-white rounded-lg shadow-sm">
+            <Button
+              variant="ghost"
+              className="w-full justify-between p-6 h-auto text-left hover:bg-gray-50"
+              onClick={() => toast({ title: "Privacy & Security", description: "Coming soon" })}
+            >
+              <div>
+                <h3 className="text-base font-medium text-gray-900">Privacy & Security</h3>
+                <p className="text-sm text-gray-600 mt-1">Manage your privacy settings and account security</p>
+              </div>
+              <div className="text-gray-400">›</div>
+            </Button>
+          </div>
+
+          {/* Caption Settings */}
+          <div className="bg-white rounded-lg shadow-sm">
+            <Button
+              variant="ghost"
+              className="w-full justify-between p-6 h-auto text-left hover:bg-gray-50"
+              onClick={() => toast({ title: "Caption Settings", description: "Configure caption preferences" })}
+            >
+              <div>
+                <h3 className="text-base font-medium text-gray-900">Caption</h3>
+                <p className="text-sm text-gray-600 mt-1">Subtitle and caption preferences</p>
+              </div>
+              <div className="text-gray-400">›</div>
+            </Button>
+          </div>
+
+          {/* Accessibility */}
+          <div className="bg-white rounded-lg shadow-sm">
+            <Button
+              variant="ghost"
+              className="w-full justify-between p-6 h-auto text-left hover:bg-gray-50"
+              onClick={() => toast({ title: "Accessibility", description: "Accessibility options coming soon" })}
+            >
+              <div>
+                <h3 className="text-base font-medium text-gray-900">Accessibility</h3>
+                <p className="text-sm text-gray-600 mt-1">Screen reader and accessibility options</p>
+              </div>
+              <div className="text-gray-400">›</div>
+            </Button>
+          </div>
+
+          {/* Live Chat Watch on TV */}
+          <div className="bg-white rounded-lg shadow-sm">
+            <Button
+              variant="ghost"
+              className="w-full justify-between p-6 h-auto text-left hover:bg-gray-50"
+              onClick={() => toast({ title: "Live Chat Watch on TV", description: "TV viewing options coming soon" })}
+            >
+              <div>
+                <h3 className="text-base font-medium text-gray-900">Live Chat Watch on TV</h3>
+                <p className="text-sm text-gray-600 mt-1">Configure TV viewing and live chat settings</p>
+              </div>
+              <div className="text-gray-400">›</div>
+            </Button>
+          </div>
+
+          {/* Purchase and Membership */}
+          <div className="bg-white rounded-lg shadow-sm">
+            <Button
+              variant="ghost"
+              className="w-full justify-between p-6 h-auto text-left hover:bg-gray-50"
+              onClick={() => toast({ title: "Purchase and Membership", description: "Manage your subscriptions and purchases" })}
+            >
+              <div>
+                <h3 className="text-base font-medium text-gray-900">Purchase and Membership</h3>
+                <p className="text-sm text-gray-600 mt-1">Subscriptions, purchases, and premium features</p>
+              </div>
+              <div className="text-gray-400">›</div>
+            </Button>
+          </div>
+
+          {/* Billing and Payment */}
+          <div className="bg-white rounded-lg shadow-sm">
+            <Button
+              variant="ghost"
+              className="w-full justify-between p-6 h-auto text-left hover:bg-gray-50"
+              onClick={() => toast({ title: "Billing and Payment", description: "Manage payment methods and billing" })}
+            >
+              <div>
+                <h3 className="text-base font-medium text-gray-900">Billing and Payment</h3>
+                <p className="text-sm text-gray-600 mt-1">Payment methods, invoices, and billing history</p>
+              </div>
+              <div className="text-gray-400">›</div>
+            </Button>
+          </div>
+
+          {/* Your Data in BeLen */}
+          <div className="bg-white rounded-lg shadow-sm">
+            <Button
+              variant="ghost"
+              className="w-full justify-between p-6 h-auto text-left hover:bg-gray-50"
+              onClick={() => toast({ title: "Your Data in BeLen", description: "Manage your data and downloads" })}
+            >
+              <div>
+                <h3 className="text-base font-medium text-gray-900">Your Data in BeLen</h3>
+                <p className="text-sm text-gray-600 mt-1">Download your data, manage data usage</p>
+              </div>
+              <div className="text-gray-400">›</div>
+            </Button>
+          </div>
+
+          {/* General */}
+          <div className="bg-white rounded-lg shadow-sm">
+            <Button
+              variant="ghost"
+              className="w-full justify-between p-6 h-auto text-left hover:bg-gray-50"
+              onClick={() => toast({ title: "General Settings", description: "General app preferences" })}
+            >
+              <div>
+                <h3 className="text-base font-medium text-gray-900">General</h3>
+                <p className="text-sm text-gray-600 mt-1">Language, region, and general preferences</p>
+              </div>
+              <div className="text-gray-400">›</div>
+            </Button>
+          </div>
+
+          {/* BeLen Terms of Service */}
+          <div className="bg-white rounded-lg shadow-sm">
+            <Button
+              variant="ghost"
+              className="w-full justify-between p-6 h-auto text-left hover:bg-gray-50"
+              onClick={() => toast({ title: "BeLen Terms of Service", description: "View terms and policies" })}
+            >
+              <div>
+                <h3 className="text-base font-medium text-gray-900">BeLen Terms of Service</h3>
+                <p className="text-sm text-gray-600 mt-1">Privacy policy, terms of use, and community guidelines</p>
+              </div>
+              <div className="text-gray-400">›</div>
+            </Button>
+          </div>
+
+          {/* Account Management Section */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            {/* Name Field - YouTube Style */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <Label className="text-sm font-medium text-gray-900">Name</Label>
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                  <Edit3 className="h-3 w-3" />
-                </Button>
-              </div>
-              <Input
-                value={`${formData.firstName} ${formData.lastName}`}
-                onChange={(e) => {
-                  const names = e.target.value.split(' ');
-                  setFormData(prev => ({ 
-                    ...prev, 
-                    firstName: names[0] || '', 
-                    lastName: names.slice(1).join(' ') || '' 
-                  }));
-                }}
-                className="text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Handle Field - YouTube Style */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <Label className="text-sm font-medium text-gray-900">Handle</Label>
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                  <Edit3 className="h-3 w-3" />
-                </Button>
-              </div>
-              <Input
-                value={`@${formData.username}`}
-                onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value.replace('@', '') }))}
-                className="text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Channel URL Field - YouTube Style */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <Label className="text-sm font-medium text-gray-900">Channel URL</Label>
-                <Button 
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Account Management</h3>
+            <div className="space-y-4">
+              {/* Logout Button */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium text-gray-900">Log out</Label>
+                  <p className="text-sm text-gray-600">Sign out of your BeLen account</p>
+                </div>
+                <Button
                   type="button"
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-6 w-6"
-                  onClick={handleCopyUrl}
+                  variant="outline"
+                  onClick={() => logoutMutation.mutate()}
+                  disabled={logoutMutation.isPending}
+                  className="flex items-center gap-2"
+                  data-testid="button-logout"
                 >
-                  {copiedUrl ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  <LogOut className="h-4 w-4" />
+                  {logoutMutation.isPending ? "Logging out..." : "Log out"}
                 </Button>
               </div>
-              <Input
-                value={`https://www.belen.com/@${user.username}`}
-                readOnly
-                className="text-base border-gray-300 bg-gray-50 text-gray-600"
-                data-testid="input-channel-url"
-              />
-            </div>
 
-            {/* Description Field - YouTube Style */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <Label className="text-sm font-medium text-gray-900">Description</Label>
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                  <Edit3 className="h-3 w-3" />
+              {/* Delete Account Button */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium text-red-600">Delete account</Label>
+                  <p className="text-sm text-gray-600">Permanently remove your BeLen account</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  className="flex items-center gap-2"
+                  data-testid="button-delete-account"
+                  onClick={() => {
+                    toast({
+                      title: "Account deletion",
+                      description: "Account deletion functionality will be available soon.",
+                    });
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete account
                 </Button>
               </div>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Describe here"
-                className="text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500 min-h-[80px] resize-none"
-                maxLength={1000}
-              />
-            </div>
-
-            {/* My Community Toggle - YouTube Style */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-sm font-medium text-gray-900">My Community</Label>
-                  <p className="text-sm text-gray-600">Viewers can post</p>
-                </div>
-                <Switch
-                  checked={formData.allowComments}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, allowComments: checked }))}
-                  className="data-[state=checked]:bg-blue-600"
-                />
-              </div>
-            </div>
-
-            {/* Privacy Toggle - YouTube Style */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-sm font-medium text-gray-900">Privacy</Label>
-                  <p className="text-sm text-gray-600">Keep all my subscriptions private</p>
-                </div>
-                <Switch
-                  checked={formData.isPrivate}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isPrivate: checked }))}
-                  className="data-[state=checked]:bg-gray-900"
-                />
-              </div>
-            </div>
-
-            {/* Save Button */}
-            <div className="border-t pt-6 flex justify-end">
-              <Button
-                type="submit"
-                disabled={updateProfileMutation.isPending}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
-                data-testid="button-save-changes"
-              >
-                {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
-
-            {/* Account Management Section */}
-            <div className="border-t pt-6 mt-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Account Management</h3>
-              <div className="space-y-4">
-                {/* Logout Button */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-900">Log out</Label>
-                    <p className="text-sm text-gray-600">Sign out of your BeLen account</p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => logoutMutation.mutate()}
-                    disabled={logoutMutation.isPending}
-                    className="flex items-center gap-2"
-                    data-testid="button-logout"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    {logoutMutation.isPending ? "Logging out..." : "Log out"}
-                  </Button>
-                </div>
-
-                {/* Delete Account Button */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-sm font-medium text-red-600">Delete account</Label>
-                    <p className="text-sm text-gray-600">Permanently remove your BeLen account</p>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    className="flex items-center gap-2"
-                    data-testid="button-delete-account"
-                    onClick={() => {
-                      toast({
-                        title: "Account deletion",
-                        description: "Account deletion functionality will be available soon.",
-                      });
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Delete account
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Notice Text - YouTube Style */}
-            <div className="border-t pt-4 mt-4">
-              <p className="text-xs text-gray-500 flex items-start gap-2">
-                <span className="text-blue-500 mt-0.5">ℹ</span>
-                Changes made to your name and profile picture are visible only on BeLen and not other Google services.
-                <span className="text-blue-500 underline cursor-pointer">Learn more</span>
-              </p>
             </div>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

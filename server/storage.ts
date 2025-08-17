@@ -19,6 +19,12 @@ import {
   type InsertWatchHistory,
   type EarningsHistory,
   type InsertEarningsHistory,
+  type LiveStream,
+  type InsertLiveStream,
+  type StreamChat,
+  type InsertStreamChat,
+  type StreamViewer,
+  type InsertStreamViewer,
   users,
   videos,
   shorts,
@@ -28,10 +34,13 @@ import {
   comments,
   likes,
   watchHistory,
-  earningsHistory
+  earningsHistory,
+  liveStreams,
+  streamChats,
+  streamViewers
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, count, sql } from "drizzle-orm";
+import { eq, desc, and, count, sql, isNull } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -100,6 +109,19 @@ export interface IStorage {
   // Earnings methods
   addEarnings(earnings: InsertEarningsHistory): Promise<EarningsHistory>;
   getUserEarningsHistory(userId: string): Promise<EarningsHistory[]>;
+
+  // Live streaming methods
+  createLiveStream(data: InsertLiveStream & { userId: string }): Promise<LiveStream>;
+  getLiveStream(id: string): Promise<LiveStream | undefined>;
+  getUserLiveStreams(userId: string): Promise<LiveStream[]>;
+  getActiveLiveStreams(): Promise<LiveStream[]>;
+  updateLiveStreamStatus(id: string, status: string, extraData?: Record<string, any>): Promise<LiveStream>;
+  updateStreamViewers(id: string, viewers: number): Promise<void>;
+  addStreamChat(data: InsertStreamChat): Promise<StreamChat>;
+  getStreamChats(streamId: string, limit?: number): Promise<StreamChat[]>;
+  addStreamViewer(data: InsertStreamViewer): Promise<StreamViewer>;
+  removeStreamViewer(streamId: string, sessionId: string): Promise<void>;
+  getActiveStreamViewers(streamId: string): Promise<StreamViewer[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -112,33 +134,33 @@ export class DatabaseStorage implements IStorage {
   // User methods
   async getUser(id: string): Promise<User | undefined> {
     if (!db) throw new Error("Database not available");
-    const [user] = await db.select().from(users).where(eq(users.id, id));
+    const [user] = await db!.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
 
   async getAllUsers(): Promise<User[]> {
     if (!db) throw new Error("Database not available");
-    const allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
+    const allUsers = await db!.select().from(users).orderBy(desc(users.createdAt));
     return allUsers;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
+    const [user] = await db!.select().from(users).where(eq(users.username, username));
     return user || undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
+    const [user] = await db!.select().from(users).where(eq(users.email, email));
     return user || undefined;
   }
 
   async getUserByPhone(phone: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.phone, phone));
+    const [user] = await db!.select().from(users).where(eq(users.phone, phone));
     return user || undefined;
   }
 
   async getUserByEmailOrPhone(emailOrPhone: string): Promise<User | undefined> {
-    const userResults = await db.select().from(users).where(
+    const userResults = await db!.select().from(users).where(
       eq(users.email, emailOrPhone)
     );
     
@@ -146,7 +168,7 @@ export class DatabaseStorage implements IStorage {
       return userResults[0];
     }
     
-    const phoneResults = await db.select().from(users).where(
+    const phoneResults = await db!.select().from(users).where(
       eq(users.phone, emailOrPhone)
     );
     
@@ -190,16 +212,16 @@ export class DatabaseStorage implements IStorage {
 
   // Video methods
   async getVideos(): Promise<Video[]> {
-    return await db.select().from(videos).orderBy(desc(videos.createdAt));
+    return await db!.select().from(videos).orderBy(desc(videos.createdAt));
   }
 
   async getVideo(id: string): Promise<Video | undefined> {
-    const [video] = await db.select().from(videos).where(eq(videos.id, id));
+    const [video] = await db!.select().from(videos).where(eq(videos.id, id));
     return video || undefined;
   }
 
   async getVideosByUser(userId: string): Promise<Video[]> {
-    return await db.select().from(videos).where(eq(videos.userId, userId)).orderBy(desc(videos.createdAt));
+    return await db!.select().from(videos).where(eq(videos.userId, userId)).orderBy(desc(videos.createdAt));
   }
 
   async createVideo(insertVideo: InsertVideo): Promise<Video> {
@@ -221,16 +243,16 @@ export class DatabaseStorage implements IStorage {
 
   // Shorts methods
   async getShorts(): Promise<Shorts[]> {
-    return await db.select().from(shorts).orderBy(desc(shorts.createdAt));
+    return await db!.select().from(shorts).orderBy(desc(shorts.createdAt));
   }
 
   async getShortsItem(id: string): Promise<Shorts | undefined> {
-    const [shortsItem] = await db.select().from(shorts).where(eq(shorts.id, id));
+    const [shortsItem] = await db!.select().from(shorts).where(eq(shorts.id, id));
     return shortsItem || undefined;
   }
 
   async getShortsByUser(userId: string): Promise<Shorts[]> {
-    return await db.select().from(shorts).where(eq(shorts.userId, userId)).orderBy(desc(shorts.createdAt));
+    return await db!.select().from(shorts).where(eq(shorts.userId, userId)).orderBy(desc(shorts.createdAt));
   }
 
   async createShorts(insertShorts: InsertShorts): Promise<Shorts> {
@@ -252,16 +274,16 @@ export class DatabaseStorage implements IStorage {
 
   // Photo methods
   async getPhotos(): Promise<Photo[]> {
-    return await db.select().from(photos).orderBy(desc(photos.createdAt));
+    return await db!.select().from(photos).orderBy(desc(photos.createdAt));
   }
 
   async getPhoto(id: string): Promise<Photo | undefined> {
-    const [photo] = await db.select().from(photos).where(eq(photos.id, id));
+    const [photo] = await db!.select().from(photos).where(eq(photos.id, id));
     return photo || undefined;
   }
 
   async getPhotosByUser(userId: string): Promise<Photo[]> {
-    return await db.select().from(photos).where(eq(photos.userId, userId)).orderBy(desc(photos.createdAt));
+    return await db!.select().from(photos).where(eq(photos.userId, userId)).orderBy(desc(photos.createdAt));
   }
 
   async createPhoto(insertPhoto: InsertPhoto): Promise<Photo> {
@@ -302,12 +324,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTrendingCreators(): Promise<User[]> {
-    return await db.select().from(users).orderBy(desc(users.totalEarnings)).limit(10);
+    return await db!.select().from(users).orderBy(desc(users.totalEarnings)).limit(10);
   }
 
   // User preferences methods
   async getUserPreferences(userId: string): Promise<UserPreferences | undefined> {
-    const [preferences] = await db.select().from(userPreferences).where(eq(userPreferences.userId, userId));
+    const [preferences] = await db!.select().from(userPreferences).where(eq(userPreferences.userId, userId));
     return preferences || undefined;
   }
 
@@ -338,15 +360,15 @@ export class DatabaseStorage implements IStorage {
       
     // Update follower counts
     await Promise.all([
-      db.update(users).set({ following: sql`${users.following} + 1` }).where(eq(users.id, followerId)),
-      db.update(users).set({ followers: sql`${users.followers} + 1` }).where(eq(users.id, followingId))
+      db!.update(users).set({ following: sql`${users.following} + 1` }).where(eq(users.id, followerId)),
+      db!.update(users).set({ followers: sql`${users.followers} + 1` }).where(eq(users.id, followingId))
     ]);
     
     return follow;
   }
 
   async unfollowUser(followerId: string, followingId: string): Promise<void> {
-    await db.delete(follows).where(
+    await db!.delete(follows).where(
       and(
         eq(follows.followerId, followerId),
         eq(follows.followingId, followingId)
@@ -355,8 +377,8 @@ export class DatabaseStorage implements IStorage {
     
     // Update follower counts
     await Promise.all([
-      db.update(users).set({ following: sql`${users.following} - 1` }).where(eq(users.id, followerId)),
-      db.update(users).set({ followers: sql`${users.followers} - 1` }).where(eq(users.id, followingId))
+      db!.update(users).set({ following: sql`${users.following} - 1` }).where(eq(users.id, followerId)),
+      db!.update(users).set({ followers: sql`${users.followers} - 1` }).where(eq(users.id, followingId))
     ]);
   }
 
@@ -432,14 +454,14 @@ export class DatabaseStorage implements IStorage {
     
     // Update like count on content
     if (contentType === 'photo') {
-      await db.update(photos).set({ likes: sql`${photos.likes} + 1` }).where(eq(photos.id, contentId));
+      await db!.update(photos).set({ likes: sql`${photos.likes} + 1` }).where(eq(photos.id, contentId));
     }
     
     return like;
   }
 
   async unlikeContent(userId: string, contentId: string, contentType: string): Promise<void> {
-    await db.delete(likes).where(
+    await db!.delete(likes).where(
       and(
         eq(likes.userId, userId),
         eq(likes.contentId, contentId),
@@ -449,7 +471,7 @@ export class DatabaseStorage implements IStorage {
     
     // Update like count on content
     if (contentType === 'photo') {
-      await db.update(photos).set({ likes: sql`${photos.likes} - 1` }).where(eq(photos.id, contentId));
+      await db!.update(photos).set({ likes: sql`${photos.likes} - 1` }).where(eq(photos.id, contentId));
     }
   }
 
@@ -502,11 +524,125 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserEarningsHistory(userId: string): Promise<EarningsHistory[]> {
-    return await db
+    return await db!
       .select()
       .from(earningsHistory)
       .where(eq(earningsHistory.userId, userId))
       .orderBy(desc(earningsHistory.createdAt));
+  }
+
+  // Live Streaming methods
+  async createLiveStream(data: InsertLiveStream & { userId: string }): Promise<LiveStream> {
+    const streamKey = `sk_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+    
+    const [stream] = await db!.insert(liveStreams).values({
+      ...data,
+      streamKey,
+    }).returning();
+    
+    return stream;
+  }
+
+  async getLiveStream(id: string): Promise<LiveStream | undefined> {
+    const [stream] = await db!
+      .select()
+      .from(liveStreams)
+      .where(eq(liveStreams.id, id));
+    
+    return stream || undefined;
+  }
+
+  async getUserLiveStreams(userId: string): Promise<LiveStream[]> {
+    return await db!
+      .select()
+      .from(liveStreams)
+      .where(eq(liveStreams.userId, userId))
+      .orderBy(desc(liveStreams.createdAt));
+  }
+
+  async getActiveLiveStreams(): Promise<LiveStream[]> {
+    return await db!
+      .select()
+      .from(liveStreams)
+      .where(eq(liveStreams.status, "live"))
+      .orderBy(desc(liveStreams.viewers));
+  }
+
+  async updateLiveStreamStatus(id: string, status: string, extraData?: Record<string, any>): Promise<LiveStream> {
+    const updateData: any = { status, updatedAt: new Date() };
+    
+    if (status === "live" && !extraData?.startedAt) {
+      updateData.startedAt = new Date();
+    } else if (status === "ended" && !extraData?.endedAt) {
+      updateData.endedAt = new Date();
+    }
+    
+    if (extraData) {
+      Object.assign(updateData, extraData);
+    }
+
+    const [stream] = await db!
+      .update(liveStreams)
+      .set(updateData)
+      .where(eq(liveStreams.id, id))
+      .returning();
+    
+    return stream;
+  }
+
+  async updateStreamViewers(id: string, viewers: number): Promise<void> {
+    await db!
+      .update(liveStreams)
+      .set({ 
+        viewers,
+        maxViewers: sql`GREATEST(${liveStreams.maxViewers}, ${viewers})`,
+        updatedAt: new Date()
+      })
+      .where(eq(liveStreams.id, id));
+  }
+
+  async addStreamChat(data: InsertStreamChat): Promise<StreamChat> {
+    const [chat] = await db!.insert(streamChats).values(data).returning();
+    return chat;
+  }
+
+  async getStreamChats(streamId: string, limit: number = 50): Promise<StreamChat[]> {
+    return await db!
+      .select()
+      .from(streamChats)
+      .where(eq(streamChats.streamId, streamId))
+      .orderBy(desc(streamChats.createdAt))
+      .limit(limit);
+  }
+
+  async addStreamViewer(data: InsertStreamViewer): Promise<StreamViewer> {
+    const [viewer] = await db!.insert(streamViewers).values(data).returning();
+    return viewer;
+  }
+
+  async removeStreamViewer(streamId: string, sessionId: string): Promise<void> {
+    await db!
+      .update(streamViewers)
+      .set({ leftAt: new Date() })
+      .where(
+        and(
+          eq(streamViewers.streamId, streamId),
+          eq(streamViewers.sessionId, sessionId),
+          isNull(streamViewers.leftAt)
+        )
+      );
+  }
+
+  async getActiveStreamViewers(streamId: string): Promise<StreamViewer[]> {
+    return await db!
+      .select()
+      .from(streamViewers)
+      .where(
+        and(
+          eq(streamViewers.streamId, streamId),
+          isNull(streamViewers.leftAt)
+        )
+      );
   }
 }
 
@@ -823,6 +959,51 @@ export class MemStorage implements IStorage {
   }
 
   async getUserEarningsHistory(userId: string): Promise<EarningsHistory[]> {
+    return [];
+  }
+
+  // Live streaming methods (stub implementations)
+  async createLiveStream(data: InsertLiveStream & { userId: string }): Promise<LiveStream> {
+    throw new Error("Live streaming not available with memory storage");
+  }
+
+  async getLiveStream(id: string): Promise<LiveStream | undefined> {
+    return undefined;
+  }
+
+  async getUserLiveStreams(userId: string): Promise<LiveStream[]> {
+    return [];
+  }
+
+  async getActiveLiveStreams(): Promise<LiveStream[]> {
+    return [];
+  }
+
+  async updateLiveStreamStatus(id: string, status: string, extraData?: Record<string, any>): Promise<LiveStream> {
+    throw new Error("Live streaming not available with memory storage");
+  }
+
+  async updateStreamViewers(id: string, viewers: number): Promise<void> {
+    // Not implemented in memory storage
+  }
+
+  async addStreamChat(data: InsertStreamChat): Promise<StreamChat> {
+    throw new Error("Live streaming not available with memory storage");
+  }
+
+  async getStreamChats(streamId: string, limit?: number): Promise<StreamChat[]> {
+    return [];
+  }
+
+  async addStreamViewer(data: InsertStreamViewer): Promise<StreamViewer> {
+    throw new Error("Live streaming not available with memory storage");
+  }
+
+  async removeStreamViewer(streamId: string, sessionId: string): Promise<void> {
+    // Not implemented in memory storage
+  }
+
+  async getActiveStreamViewers(streamId: string): Promise<StreamViewer[]> {
     return [];
   }
 }

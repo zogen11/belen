@@ -3,7 +3,7 @@ import express from "express";
 import session from "express-session";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertVideoSchema, insertShortsSchema, insertPhotoSchema, loginSchema, signupSchema } from "@shared/schema";
+import { insertVideoSchema, insertShortsSchema, insertPhotoSchema, loginSchema, signupSchema, insertLiveStreamSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import { randomUUID } from "crypto";
@@ -869,6 +869,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching earnings history:", error);
       res.status(500).json({ error: "Failed to fetch earnings history" });
+    }
+  });
+
+  // Live Streaming API Routes
+  app.post("/api/live-streams", requireAuth, async (req, res) => {
+    try {
+      const validatedData = insertLiveStreamSchema.parse(req.body);
+      const stream = await storage.createLiveStream({
+        ...validatedData,
+        userId: req.user!.id,
+      });
+      res.json(stream);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors[0].message });
+      }
+      console.error("Create live stream error:", error);
+      res.status(500).json({ error: "Failed to create live stream" });
+    }
+  });
+
+  app.get("/api/live-streams/:id", async (req, res) => {
+    try {
+      const stream = await storage.getLiveStream(req.params.id);
+      if (!stream) {
+        return res.status(404).json({ error: "Live stream not found" });
+      }
+      res.json(stream);
+    } catch (error) {
+      console.error("Get live stream error:", error);
+      res.status(500).json({ error: "Failed to fetch live stream" });
+    }
+  });
+
+  app.get("/api/live-streams", async (req, res) => {
+    try {
+      const { userId, status } = req.query;
+      
+      let streams;
+      if (userId) {
+        streams = await storage.getUserLiveStreams(userId as string);
+      } else if (status === "live") {
+        streams = await storage.getActiveLiveStreams();
+      } else {
+        streams = await storage.getActiveLiveStreams(); // Default to active streams
+      }
+      
+      res.json(streams);
+    } catch (error) {
+      console.error("Get live streams error:", error);
+      res.status(500).json({ error: "Failed to fetch live streams" });
+    }
+  });
+
+  app.patch("/api/live-streams/:id/status", requireAuth, async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (!["setup", "live", "ended"].includes(status)) {
+        return res.status(400).json({ error: "Invalid status" });
+      }
+
+      const stream = await storage.getLiveStream(req.params.id);
+      if (!stream) {
+        return res.status(404).json({ error: "Live stream not found" });
+      }
+
+      if (stream.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+
+      const updatedStream = await storage.updateLiveStreamStatus(req.params.id, status);
+      res.json(updatedStream);
+    } catch (error) {
+      console.error("Update stream status error:", error);
+      res.status(500).json({ error: "Failed to update stream status" });
+    }
+  });
+
+  app.post("/api/live-streams/:id/chat", async (req, res) => {
+    try {
+      const { message, username } = req.body;
+      if (!message || !username) {
+        return res.status(400).json({ error: "Message and username are required" });
+      }
+
+      const chat = await storage.addStreamChat({
+        streamId: req.params.id,
+        userId: req.user?.id || null,
+        username,
+        message,
+      });
+
+      res.json(chat);
+    } catch (error) {
+      console.error("Add stream chat error:", error);
+      res.status(500).json({ error: "Failed to add chat message" });
+    }
+  });
+
+  app.get("/api/live-streams/:id/chat", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const chats = await storage.getStreamChats(req.params.id, limit);
+      res.json(chats);
+    } catch (error) {
+      console.error("Get stream chat error:", error);
+      res.status(500).json({ error: "Failed to fetch chat messages" });
     }
   });
 

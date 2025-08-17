@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,19 +17,114 @@ import {
   Eye,
   Heart,
   DollarSign,
-  Monitor
+  Monitor,
+  Camera,
+  Mic,
+  MicOff,
+  CameraOff
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function LiveStreaming() {
-  const [isLive, setIsLive] = useState(false);
+  const [currentStream, setCurrentStream] = useState<any>(null);
   const [streamTitle, setStreamTitle] = useState("");
   const [streamDescription, setStreamDescription] = useState("");
   const [chatEnabled, setChatEnabled] = useState(true);
   const [donationsEnabled, setDonationsEnabled] = useState(true);
+  const [cameraEnabled, setCameraEnabled] = useState(true);
+  const [micEnabled, setMicEnabled] = useState(true);
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const handleStartStream = () => {
+  // Query for user's live streams
+  const { data: liveStreams = [] } = useQuery({
+    queryKey: ['/api/live-streams'],
+    enabled: true,
+  });
+
+  // Mutation to create live stream
+  const createStreamMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('/api/live-streams', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    }),
+    onSuccess: (stream) => {
+      setCurrentStream(stream);
+      queryClient.invalidateQueries({ queryKey: ['/api/live-streams'] });
+      toast({
+        title: "Stream Created!",
+        description: "Your live stream has been set up successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create stream",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Mutation to update stream status
+  const updateStreamStatusMutation = useMutation({
+    mutationFn: ({ streamId, status }: { streamId: string, status: string }) =>
+      apiRequest(`/api/live-streams/${streamId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status })
+      }),
+    onSuccess: (stream) => {
+      setCurrentStream(stream);
+      queryClient.invalidateQueries({ queryKey: ['/api/live-streams'] });
+      toast({
+        title: stream.status === "live" ? "🔴 Going Live!" : "Stream Ended",
+        description: stream.status === "live" ? "Your live stream has started" : "Your stream has ended",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update stream status",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Initialize camera and microphone
+  useEffect(() => {
+    const initializeMedia = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: cameraEnabled,
+          audio: micEnabled
+        });
+        setMediaStream(stream);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (error) {
+        console.error('Error accessing media devices:', error);
+        toast({
+          title: "Camera/Microphone Access",
+          description: "Please allow camera and microphone access to start streaming",
+          variant: "destructive",
+        });
+      }
+    };
+
+    initializeMedia();
+
+    return () => {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [cameraEnabled, micEnabled]);
+
+  const handleCreateStream = () => {
     if (!streamTitle.trim()) {
       toast({
         title: "Error",
@@ -39,11 +134,43 @@ export default function LiveStreaming() {
       return;
     }
 
-    setIsLive(!isLive);
-    toast({
-      title: isLive ? "Stream Ended" : "🔴 Going Live!",
-      description: isLive ? "Your stream has ended" : "Your live stream has started successfully",
+    createStreamMutation.mutate({
+      title: streamTitle,
+      description: streamDescription,
+      chatEnabled,
+      donationsEnabled,
+      tags: ["live"]
     });
+  };
+
+  const handleToggleStream = () => {
+    if (!currentStream) return;
+
+    const newStatus = currentStream.status === "live" ? "ended" : "live";
+    updateStreamStatusMutation.mutate({
+      streamId: currentStream.id,
+      status: newStatus
+    });
+  };
+
+  const toggleCamera = () => {
+    setCameraEnabled(!cameraEnabled);
+    if (mediaStream) {
+      const videoTrack = mediaStream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = !cameraEnabled;
+      }
+    }
+  };
+
+  const toggleMicrophone = () => {
+    setMicEnabled(!micEnabled);
+    if (mediaStream) {
+      const audioTrack = mediaStream.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !micEnabled;
+      }
+    }
   };
 
   const streamStats = {
@@ -72,7 +199,7 @@ export default function LiveStreaming() {
           <p className="text-muted-foreground">Connect with your audience in real-time</p>
         </div>
         
-        {isLive && (
+        {currentStream?.status === "live" && (
           <Badge variant="destructive" className="animate-pulse">
             🔴 LIVE
           </Badge>
@@ -219,15 +346,25 @@ export default function LiveStreaming() {
             </CardHeader>
             <CardContent>
               <div className="aspect-video bg-gray-900 rounded-lg relative overflow-hidden">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center text-white">
-                    <Monitor className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <p className="text-lg font-medium">Camera Preview</p>
-                    <p className="text-sm opacity-75">Start your camera to see preview</p>
+                {mediaStream && cameraEnabled ? (
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center text-white">
+                      <Monitor className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                      <p className="text-lg font-medium">Camera Preview</p>
+                      <p className="text-sm opacity-75">Start your camera to see preview</p>
+                    </div>
                   </div>
-                </div>
+                )}
                 
-                {isLive && (
+                {currentStream?.status === "live" && (
                   <div className="absolute top-4 left-4">
                     <Badge variant="destructive" className="animate-pulse">
                       🔴 LIVE
@@ -238,7 +375,58 @@ export default function LiveStreaming() {
                 <div className="absolute top-4 right-4 space-y-2">
                   <div className="flex items-center gap-2 text-white bg-black/50 px-2 py-1 rounded">
                     <Eye className="h-4 w-4" />
-                    <span className="text-sm">{streamStats.viewers}</span>
+                    <span className="text-sm">{currentStream?.viewers || 0}</span>
+                  </div>
+                </div>
+
+                <div className="absolute bottom-4 left-4 right-4">
+                  <div className="flex gap-2 justify-center">
+                    <Button
+                      onClick={toggleCamera}
+                      variant={cameraEnabled ? "default" : "secondary"}
+                      size="sm"
+                      className="bg-black/50 hover:bg-black/70"
+                      data-testid="button-toggle-camera"
+                    >
+                      {cameraEnabled ? <Camera className="h-4 w-4" /> : <CameraOff className="h-4 w-4" />}
+                    </Button>
+                    
+                    <Button
+                      onClick={toggleMicrophone}
+                      variant={micEnabled ? "default" : "secondary"}
+                      size="sm"
+                      className="bg-black/50 hover:bg-black/70"
+                      data-testid="button-toggle-mic"
+                    >
+                      {micEnabled ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
+                    </Button>
+
+                    {!currentStream ? (
+                      <Button 
+                        onClick={handleCreateStream}
+                        disabled={createStreamMutation.isPending}
+                        className="bg-blue-600 hover:bg-blue-700"
+                        size="sm"
+                        data-testid="button-create-stream"
+                      >
+                        {createStreamMutation.isPending ? "Creating..." : "Create"}
+                      </Button>
+                    ) : (
+                      <Button 
+                        onClick={handleToggleStream}
+                        disabled={updateStreamStatusMutation.isPending}
+                        className={currentStream.status === "live" ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"}
+                        size="sm"
+                        data-testid={currentStream.status === "live" ? "button-end-stream" : "button-start-stream"}
+                      >
+                        {updateStreamStatusMutation.isPending 
+                          ? "..." 
+                          : currentStream.status === "live" 
+                            ? "End" 
+                            : "Live"
+                        }
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>

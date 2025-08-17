@@ -133,14 +133,57 @@ export const watchHistory = pgTable("watch_history", {
   isCompleted: boolean("is_completed").default(false),
 });
 
+// Live streams - permanent storage
+export const liveStreams = pgTable("live_streams", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  thumbnailUrl: text("thumbnail_url"),
+  streamKey: text("stream_key").notNull(),
+  status: text("status").notNull().default("setup"), // setup, live, ended
+  viewers: integer("viewers").default(0),
+  maxViewers: integer("max_viewers").default(0),
+  chatEnabled: boolean("chat_enabled").default(true),
+  donationsEnabled: boolean("donations_enabled").default(true),
+  isMonetized: boolean("is_monetized").default(false),
+  earnings: integer("earnings").default(0), // in cents
+  tags: text("tags").array(),
+  startedAt: timestamp("started_at"),
+  endedAt: timestamp("ended_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Stream chat messages - permanent storage
+export const streamChats = pgTable("stream_chats", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  streamId: varchar("stream_id").notNull().references(() => liveStreams.id),
+  userId: varchar("user_id").references(() => users.id),
+  username: text("username").notNull(),
+  message: text("message").notNull(),
+  isSystemMessage: boolean("is_system_message").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Stream viewers tracking - permanent storage
+export const streamViewers = pgTable("stream_viewers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  streamId: varchar("stream_id").notNull().references(() => liveStreams.id),
+  userId: varchar("user_id").references(() => users.id),
+  sessionId: text("session_id").notNull(),
+  joinedAt: timestamp("joined_at").defaultNow(),
+  leftAt: timestamp("left_at"),
+});
+
 // Earnings history - permanent storage
 export const earningsHistory = pgTable("earnings_history", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
   contentId: varchar("content_id").notNull(),
-  contentType: text("content_type").notNull(), // "video", "shorts", "photo"
+  contentType: text("content_type").notNull(), // "video", "shorts", "photo", "live_stream"
   amount: integer("amount").notNull(), // in cents
-  source: text("source").notNull(), // "view", "like", "share", "ad_revenue"
+  source: text("source").notNull(), // "view", "like", "share", "ad_revenue", "donation"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -223,6 +266,38 @@ export const insertEarningsHistorySchema = createInsertSchema(earningsHistory).o
   id: true,
   createdAt: true,
 });
+
+// Live streaming schemas
+export const insertLiveStreamSchema = createInsertSchema(liveStreams).omit({
+  id: true,
+  streamKey: true,
+  status: true,
+  viewers: true,
+  maxViewers: true,
+  earnings: true,
+  startedAt: true,
+  endedAt: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertStreamChatSchema = createInsertSchema(streamChats).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertStreamViewerSchema = createInsertSchema(streamViewers).omit({
+  id: true,
+  joinedAt: true,
+});
+
+// Live streaming types
+export type LiveStream = typeof liveStreams.$inferSelect;
+export type StreamChat = typeof streamChats.$inferSelect;
+export type StreamViewer = typeof streamViewers.$inferSelect;
+export type InsertLiveStream = typeof insertLiveStreamSchema._type;
+export type InsertStreamChat = typeof insertStreamChatSchema._type;
+export type InsertStreamViewer = typeof insertStreamViewerSchema._type;
 
 // Export all types
 export type User = typeof users.$inferSelect;

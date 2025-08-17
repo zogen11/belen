@@ -9,6 +9,8 @@ import FeaturedVideo from "@/components/content/featured-video";
 import TrendingCreators from "@/components/sidebar/trending-creators";
 import EarningsPreview from "@/components/sidebar/earnings-preview";
 import QuickActions from "@/components/sidebar/quick-actions";
+import WelcomeShowcase from "@/components/advanced/welcome-showcase";
+import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Video, Shorts, Photo } from "@shared/schema";
@@ -17,6 +19,7 @@ type ContentType = "all" | "videos" | "shorts" | "photos" | "trending";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<ContentType>("all");
+  const { user } = useAuth();
 
   const { data: allContent, isLoading } = useQuery<(Video | Shorts | Photo)[]>({
     queryKey: ["/api/content"],
@@ -101,6 +104,13 @@ export default function Home() {
             ))}
           </div>
         </div>
+
+        {/* Welcome Showcase for New Users or Feature Highlight */}
+        {(!user || allContent?.length === 0) && (
+          <div className="px-4 mb-8">
+            <WelcomeShowcase />
+          </div>
+        )}
 
         {/* YouTube-style Main Feed */}
         <div className="px-4">

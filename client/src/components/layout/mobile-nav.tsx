@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, Plus, User, Compass, BookmarkIcon } from "lucide-react";
+import { Home, Plus, User, Compass, BookmarkIcon, BarChart3, Radio } from "lucide-react";
 
 export default function MobileNav() {
   const [location] = useLocation();
@@ -8,7 +8,8 @@ export default function MobileNav() {
     { path: "/", icon: Home, label: "Home" },
     { path: "/explore", icon: Compass, label: "Explore" },
     { path: "/upload", icon: Plus, label: "", isSpecial: true },
-    { path: "/subscriptions", icon: BookmarkIcon, label: "Subscriptions" },
+    { path: "/analytics", icon: BarChart3, label: "Analytics" },
+    { path: "/live", icon: Radio, label: "Live", isLive: true },
     { path: "/profile", icon: User, label: "You" },
   ];
 
@@ -26,6 +27,22 @@ export default function MobileNav() {
                   <div className="w-7 h-7 bg-black rounded-sm flex items-center justify-center">
                     <Icon className="w-5 h-5 text-white" />
                   </div>
+                </button>
+              </Link>
+            );
+          }
+
+          if (item.isLive) {
+            return (
+              <Link key={item.path} href={item.path}>
+                <button className={`flex flex-col items-center space-y-1 p-2 ${
+                  isActive ? "text-red-600" : "text-gray-500"
+                }`}>
+                  <div className="relative">
+                    <Icon className="w-6 h-6" />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                  </div>
+                  <span className="text-xs font-medium">{item.label}</span>
                 </button>
               </Link>
             );

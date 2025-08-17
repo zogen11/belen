@@ -21,6 +21,9 @@ import HistoryPage from "@/pages/history";
 import WatchLater from "@/pages/watch-later";
 import Accounts from "@/pages/accounts";
 import Help from "@/pages/help";
+import Analytics from "@/pages/analytics";
+import AIStudio from "@/pages/ai-studio";
+import Live from "@/pages/live";
 
 function ProtectedRoute({ component: Component, ...rest }: { component: React.ComponentType }) {
   const { isAuthenticated } = useAuth();
@@ -62,6 +65,9 @@ function Router() {
       <Route path="/profile-edit" component={() => <ProtectedRoute component={ProfileEdit} />} />
       <Route path="/history" component={() => <ProtectedRoute component={HistoryPage} />} />
       <Route path="/watch-later" component={() => <ProtectedRoute component={WatchLater} />} />
+      <Route path="/analytics" component={() => <ProtectedRoute component={Analytics} />} />
+      <Route path="/ai-studio" component={() => <ProtectedRoute component={AIStudio} />} />
+      <Route path="/live" component={() => <ProtectedRoute component={Live} />} />
       <Route path="/accounts" component={Accounts} />
       <Route path="/help" component={Help} />
       

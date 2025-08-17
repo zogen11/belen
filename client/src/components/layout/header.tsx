@@ -151,6 +151,25 @@ export default function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
 
+            {/* Quick Access to Advanced Features */}
+            {user && (
+              <>
+                <Link href="/live">
+                  <button className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-red-50 hover:bg-red-100 rounded-full transition-colors text-red-600">
+                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                    <span className="text-sm font-medium">Go Live</span>
+                  </button>
+                </Link>
+                
+                <Link href="/ai-studio">
+                  <button className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-purple-50 hover:bg-purple-100 rounded-full transition-colors text-purple-600">
+                    <Sparkles className="w-4 h-4" />
+                    <span className="text-sm font-medium">AI Studio</span>
+                  </button>
+                </Link>
+              </>
+            )}
+
             {/* AI Features Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

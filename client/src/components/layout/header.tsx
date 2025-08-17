@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Search, Plus, Cast, Bell, LogOut, User, Users, Tv, Monitor, Smartphone, Wifi } from "lucide-react";
+import { Search, Plus, Cast, Bell, LogOut, User, Users, Tv, Monitor, Smartphone, Wifi, Bot, Sparkles, MessageSquare, Image, Video, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -48,6 +48,13 @@ export default function Header() {
     toast({
       title: "Casting stopped",
       description: "Disconnected from casting device",
+    });
+  };
+
+  const handleAIFeature = (feature: string) => {
+    toast({
+      title: "AI Feature",
+      description: `${feature} is now active`,
     });
   };
 
@@ -143,6 +150,61 @@ export default function Header() {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* AI Features Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600 hover:text-purple-600">
+                  <Bot className="w-6 h-6" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-72">
+                <DropdownMenuItem onClick={() => handleAIFeature('AI Content Generator')}>
+                  <Sparkles className="mr-2 h-4 w-4 text-purple-600" />
+                  <div className="flex flex-col">
+                    <span>AI Content Generator</span>
+                    <span className="text-xs text-muted-foreground">Generate video ideas and scripts</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAIFeature('Smart Thumbnails')}>
+                  <Image className="mr-2 h-4 w-4 text-blue-600" />
+                  <div className="flex flex-col">
+                    <span>Smart Thumbnails</span>
+                    <span className="text-xs text-muted-foreground">AI-powered thumbnail creation</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAIFeature('Auto Captions')}>
+                  <MessageSquare className="mr-2 h-4 w-4 text-green-600" />
+                  <div className="flex flex-col">
+                    <span>Auto Captions</span>
+                    <span className="text-xs text-muted-foreground">Generate subtitles automatically</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAIFeature('Video Editor')}>
+                  <Video className="mr-2 h-4 w-4 text-red-600" />
+                  <div className="flex flex-col">
+                    <span>AI Video Editor</span>
+                    <span className="text-xs text-muted-foreground">Smart editing and effects</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => handleAIFeature('Content Optimizer')}>
+                  <Wand2 className="mr-2 h-4 w-4 text-orange-600" />
+                  <div className="flex flex-col">
+                    <span>Content Optimizer</span>
+                    <span className="text-xs text-muted-foreground">Improve engagement and reach</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAIFeature('AI Assistant')}>
+                  <Bot className="mr-2 h-4 w-4 text-indigo-600" />
+                  <div className="flex flex-col">
+                    <span>AI Assistant</span>
+                    <span className="text-xs text-muted-foreground">Get personalized creator tips</span>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <button 
               onClick={handleMobileSearch}
               className="p-2 hover:bg-gray-100 rounded-full md:hidden"

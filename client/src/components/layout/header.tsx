@@ -1,16 +1,19 @@
 import { Link, useLocation } from "wouter";
-import { Search, Plus, Cast, Bell, LogOut, User, Users } from "lucide-react";
+import { Search, Plus, Cast, Bell, LogOut, User, Users, Tv, Monitor, Smartphone, Wifi } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/auth-context";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Header() {
   const [location, navigate] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isCasting, setIsCasting] = useState(false);
   const { user, logout } = useAuth();
+  const { toast } = useToast();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +24,31 @@ export default function Header() {
 
   const handleMobileSearch = () => {
     setIsMobileSearchOpen(!isMobileSearchOpen);
+  };
+
+  const handleCastToDevice = (deviceType: string, deviceName: string) => {
+    setIsCasting(true);
+    toast({
+      title: "Casting to device",
+      description: `Now casting to ${deviceName}`,
+    });
+    
+    // Simulate casting process
+    setTimeout(() => {
+      setIsCasting(false);
+      toast({
+        title: "Connected",
+        description: `Successfully connected to ${deviceName}`,
+      });
+    }, 2000);
+  };
+
+  const handleStopCasting = () => {
+    setIsCasting(false);
+    toast({
+      title: "Casting stopped",
+      description: "Disconnected from casting device",
+    });
   };
 
   return (
@@ -60,9 +88,61 @@ export default function Header() {
 
           {/* Right Navigation */}
           <div className="flex items-center space-x-4">
-            <button className="p-2 hover:bg-gray-100 rounded-full">
-              <Cast className="w-6 h-6 text-gray-600" />
-            </button>
+            {/* Cast/Screen Share Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className={`p-2 hover:bg-gray-100 rounded-full transition-colors ${isCasting ? 'bg-blue-100 text-blue-600' : 'text-gray-600'}`}>
+                  <Cast className="w-6 h-6" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                {isCasting ? (
+                  <DropdownMenuItem onClick={handleStopCasting} className="text-red-600">
+                    <Cast className="mr-2 h-4 w-4" />
+                    <span>Stop casting</span>
+                  </DropdownMenuItem>
+                ) : (
+                  <>
+                    <DropdownMenuItem onClick={() => handleCastToDevice('tv', 'Living Room TV')}>
+                      <Tv className="mr-2 h-4 w-4" />
+                      <div className="flex flex-col">
+                        <span>Living Room TV</span>
+                        <span className="text-xs text-muted-foreground">Samsung Smart TV</span>
+                      </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleCastToDevice('tv', 'Bedroom TV')}>
+                      <Tv className="mr-2 h-4 w-4" />
+                      <div className="flex flex-col">
+                        <span>Bedroom TV</span>
+                        <span className="text-xs text-muted-foreground">LG Smart TV</span>
+                      </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleCastToDevice('monitor', 'Desktop Monitor')}>
+                      <Monitor className="mr-2 h-4 w-4" />
+                      <div className="flex flex-col">
+                        <span>Desktop Monitor</span>
+                        <span className="text-xs text-muted-foreground">Dell 27 inch</span>
+                      </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleCastToDevice('phone', 'Android Phone')}>
+                      <Smartphone className="mr-2 h-4 w-4" />
+                      <div className="flex flex-col">
+                        <span>Android Phone</span>
+                        <span className="text-xs text-muted-foreground">Samsung Galaxy</span>
+                      </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleCastToDevice('chromecast', 'Chromecast')}>
+                      <Wifi className="mr-2 h-4 w-4" />
+                      <div className="flex flex-col">
+                        <span>Chromecast</span>
+                        <span className="text-xs text-muted-foreground">Google Chromecast</span>
+                      </div>
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <button 
               onClick={handleMobileSearch}
               className="p-2 hover:bg-gray-100 rounded-full md:hidden"

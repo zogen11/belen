@@ -206,9 +206,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  app.get("/api/auth/me", requireAuth, (req, res) => {
-    const { password, ...userWithoutPassword } = req.user!;
-    res.json({ user: userWithoutPassword });
+  app.get("/api/auth/me", async (req, res) => {
+    try {
+      if (!req.session?.userId) {
+        return res.json({ user: null });
+      }
+      
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        req.session.userId = undefined;
+        return res.json({ user: null });
+      }
+      
+      const { password, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword });
+    } catch (error) {
+      console.error('Error in /api/auth/me:', error);
+      res.json({ user: null });
+    }
   });
 
   // Debug endpoint to check session

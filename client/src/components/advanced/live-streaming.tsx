@@ -48,10 +48,19 @@ export default function LiveStreaming() {
 
   // Mutation to create live stream
   const createStreamMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/live-streams', {
-      method: 'POST',
-      body: JSON.stringify(data)
-    }),
+    mutationFn: async (data: any) => {
+      const response = await fetch('/api/live-streams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create stream');
+      }
+      return response.json();
+    },
     onSuccess: (stream) => {
       setCurrentStream(stream);
       queryClient.invalidateQueries({ queryKey: ['/api/live-streams'] });
@@ -71,16 +80,24 @@ export default function LiveStreaming() {
 
   // Mutation to update stream status
   const updateStreamStatusMutation = useMutation({
-    mutationFn: ({ streamId, status }: { streamId: string, status: string }) =>
-      apiRequest(`/api/live-streams/${streamId}/status`, {
+    mutationFn: async ({ streamId, status }: { streamId: string, status: string }) => {
+      const response = await fetch(`/api/live-streams/${streamId}/status`, {
         method: 'PATCH',
-        body: JSON.stringify({ status })
-      }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update stream status');
+      }
+      return response.json();
+    },
     onSuccess: (stream) => {
       setCurrentStream(stream);
       queryClient.invalidateQueries({ queryKey: ['/api/live-streams'] });
       toast({
-        title: stream.status === "live" ? "🔴 Going Live!" : "Stream Ended",
+        title: stream.status === "live" ? "Going Live!" : "Stream Ended",
         description: stream.status === "live" ? "Your live stream has started" : "Your stream has ended",
       });
     },
@@ -173,20 +190,29 @@ export default function LiveStreaming() {
     }
   };
 
-  const streamStats = {
-    viewers: 1247,
-    likes: 342,
-    comments: 89,
-    donations: 23.45,
-    duration: "1:23:45"
-  };
+  // Query for current stream chat
+  const { data: streamChat = [] } = useQuery<any[]>({
+    queryKey: ['/api/live-streams', currentStream?.id, 'chat'],
+    enabled: !!currentStream?.id,
+    refetchInterval: currentStream?.status === 'live' ? 5000 : false, // Refresh chat every 5 seconds when live
+  });
 
-  const recentComments = [
-    { user: "CookingFan123", message: "Great recipe! 👨‍🍳", time: "2s ago" },
-    { user: "FoodLover", message: "Can you show the ingredients again?", time: "15s ago" },
-    { user: "ChefMike", message: "Professional technique! 🔥", time: "32s ago" },
-    { user: "HomeCook", message: "Following along at home!", time: "1m ago" },
-  ];
+  // Query for stream viewers
+  const { data: streamViewers = [] } = useQuery({
+    queryKey: ['/api/live-streams', currentStream?.id, 'viewers'],
+    enabled: !!currentStream?.id,
+    refetchInterval: currentStream?.status === 'live' ? 10000 : false, // Refresh viewers every 10 seconds when live
+  });
+
+  const streamStats = {
+    viewers: currentStream?.viewers || 0,
+    likes: 0, // Would come from a likes API
+    comments: Array.isArray(streamChat) ? streamChat.length : 0,
+    donations: 0, // Would come from donations API
+    duration: currentStream?.status === 'live' && currentStream?.startedAt 
+      ? `${Math.floor((Date.now() - new Date(currentStream.startedAt).getTime()) / 60000)}m`
+      : "0m"
+  };
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6">
@@ -266,24 +292,46 @@ export default function LiveStreaming() {
                   </div>
                 </div>
 
-                <Button
-                  onClick={handleStartStream}
-                  className={`w-full ${isLive ? 'bg-red-500 hover:bg-red-600' : ''}`}
-                  size="lg"
-                  data-testid="button-start-stream"
-                >
-                  {isLive ? (
-                    <>
-                      <Radio className="mr-2 h-5 w-5" />
-                      End Stream
-                    </>
-                  ) : (
-                    <>
-                      <VideoIcon className="mr-2 h-5 w-5" />
-                      Start Live Stream
-                    </>
-                  )}
-                </Button>
+                {!currentStream ? (
+                  <Button
+                    onClick={handleCreateStream}
+                    disabled={createStreamMutation.isPending}
+                    className="w-full"
+                    size="lg"
+                    data-testid="button-create-stream"
+                  >
+                    {createStreamMutation.isPending ? (
+                      "Creating Stream..."
+                    ) : (
+                      <>
+                        <VideoIcon className="mr-2 h-5 w-5" />
+                        Create Stream
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleToggleStream}
+                    disabled={updateStreamStatusMutation.isPending}
+                    className={`w-full ${currentStream.status === 'live' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-600 hover:bg-green-700'}`}
+                    size="lg"
+                    data-testid={currentStream.status === 'live' ? "button-end-stream" : "button-start-stream"}
+                  >
+                    {updateStreamStatusMutation.isPending ? (
+                      "Updating..."
+                    ) : currentStream.status === 'live' ? (
+                      <>
+                        <Radio className="mr-2 h-5 w-5" />
+                        End Stream
+                      </>
+                    ) : (
+                      <>
+                        <VideoIcon className="mr-2 h-5 w-5" />
+                        Go Live
+                      </>
+                    )}
+                  </Button>
+                )}
               </CardContent>
             </Card>
 
@@ -322,12 +370,27 @@ export default function LiveStreaming() {
                   <h4 className="font-medium mb-2">Stream Key</h4>
                   <div className="flex gap-2">
                     <Input 
-                      value="live_XXXXXXXXXXXXXXXXXXXX" 
+                      value={currentStream?.streamKey || "Create stream to generate key"} 
                       readOnly 
                       className="bg-white"
                       data-testid="input-stream-key" 
                     />
-                    <Button variant="outline" size="sm">Copy</Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      disabled={!currentStream?.streamKey}
+                      onClick={() => {
+                        if (currentStream?.streamKey) {
+                          navigator.clipboard.writeText(currentStream.streamKey);
+                          toast({
+                            title: "Copied!",
+                            description: "Stream key copied to clipboard",
+                          });
+                        }
+                      }}
+                    >
+                      Copy
+                    </Button>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     Keep your stream key private
@@ -443,20 +506,32 @@ export default function LiveStreaming() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3 h-64 overflow-y-auto mb-4">
-                  {recentComments.map((comment, index) => (
-                    <div key={index} className="flex items-start gap-2 p-2 hover:bg-gray-50 rounded">
-                      <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
-                        {comment.user[0]}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">{comment.user}</span>
-                          <span className="text-xs text-muted-foreground">{comment.time}</span>
+                  {Array.isArray(streamChat) && streamChat.length > 0 ? (
+                    streamChat.map((chat: any, index: number) => (
+                      <div key={chat.id || index} className="flex items-start gap-2 p-2 hover:bg-gray-50 rounded">
+                        <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
+                          {chat.username?.[0] || 'U'}
                         </div>
-                        <p className="text-sm">{comment.message}</p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-sm">{chat.username || 'Anonymous'}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {chat.createdAt ? new Date(chat.createdAt).toLocaleTimeString() : 'now'}
+                            </span>
+                          </div>
+                          <p className="text-sm">{chat.message}</p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex items-center justify-center h-32 text-muted-foreground">
+                      <div className="text-center">
+                        <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>No messages yet</p>
+                        <p className="text-xs">Start streaming to see chat messages</p>
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
                 
                 <div className="flex gap-2">

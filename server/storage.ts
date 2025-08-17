@@ -334,7 +334,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUserPreferences(preferences: InsertUserPreferences): Promise<UserPreferences> {
-    const [newPreferences] = await db
+    const [newPreferences] = await this.database
       .insert(userPreferences)
       .values(preferences)
       .returning();
@@ -342,7 +342,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUserPreferences(userId: string, preferences: Partial<InsertUserPreferences>): Promise<void> {
-    await db
+    await this.database
       .update(userPreferences)
       .set({ 
         ...preferences,
@@ -353,7 +353,7 @@ export class DatabaseStorage implements IStorage {
 
   // Follow methods
   async followUser(followerId: string, followingId: string): Promise<Follow> {
-    const [follow] = await db
+    const [follow] = await this.database
       .insert(follows)
       .values({ followerId, followingId })
       .returning();
@@ -1027,7 +1027,7 @@ export class MemStorage implements IStorage {
     const stream = this.liveStreams.get(id);
     if (stream) {
       stream.viewers = viewers;
-      if (viewers > stream.maxViewers) {
+      if (viewers > (stream.maxViewers || 0)) {
         stream.maxViewers = viewers;
       }
       stream.updatedAt = new Date();
@@ -1038,7 +1038,10 @@ export class MemStorage implements IStorage {
   async addStreamChat(data: InsertStreamChat): Promise<StreamChat> {
     const chat: StreamChat = {
       id: randomUUID(),
-      ...data,
+      streamId: data.streamId,
+      userId: data.userId || null,
+      username: data.username,
+      message: data.message,
       isSystemMessage: data.isSystemMessage || false,
       createdAt: new Date(),
     };
@@ -1049,7 +1052,7 @@ export class MemStorage implements IStorage {
   async getStreamChats(streamId: string, limit?: number): Promise<StreamChat[]> {
     const chats = Array.from(this.streamChats.values())
       .filter(chat => chat.streamId === streamId)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      .sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
     
     return limit ? chats.slice(-limit) : chats;
   }
@@ -1057,7 +1060,9 @@ export class MemStorage implements IStorage {
   async addStreamViewer(data: InsertStreamViewer): Promise<StreamViewer> {
     const viewer: StreamViewer = {
       id: randomUUID(),
-      ...data,
+      streamId: data.streamId,
+      userId: data.userId || null,
+      sessionId: data.sessionId,
       joinedAt: new Date(),
       leftAt: null,
     };

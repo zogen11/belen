@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, ArrowLeft, LogOut, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 
 interface UserProfile {
   id: string;
@@ -29,10 +29,22 @@ export default function ProfileEdit() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState(false);
 
   // Get current user profile
   const { data: user, isLoading } = useQuery<UserProfile>({
     queryKey: ["/api/auth/me"],
+  });
+
+  const [formData, setFormData] = useState({
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    username: user?.username || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    description: user?.description || '',
+    isPrivate: user?.isPrivate || false,
+    allowComments: user?.allowComments !== false
   });
 
 
@@ -121,6 +133,38 @@ export default function ProfileEdit() {
       });
     }
   };
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest('/api/auth/update-profile', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been updated successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Update failed",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

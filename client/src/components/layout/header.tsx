@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Search, Plus, Cast, Bell, LogOut, User, Users, Tv, Monitor, Smartphone, Wifi, Bot, Sparkles, MessageSquare, Image, Video, Wand2, Brain, Zap, Eye, Mic, Languages, TrendingUp, Target, Globe, Camera, Music } from "lucide-react";
+import { Search, Plus, Cast, Bell, LogOut, User, Users, Tv, Monitor, Smartphone, Wifi, Bot, Sparkles, MessageSquare, Image, Video, Wand2, Brain, Zap, Eye, Mic, Languages, TrendingUp, Target, Globe, Camera, Music, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -297,6 +297,11 @@ export default function Header() {
                     <DropdownMenuItem onClick={() => navigate('/accounts')} data-testid="menu-accounts">
                       <Users className="mr-2 h-4 w-4" />
                       <span>All Accounts</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate('/help')} data-testid="menu-help">
+                      <HelpCircle className="mr-2 h-4 w-4" />
+                      <span>Help & Feedback</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={logout} data-testid="menu-logout">
                       <LogOut className="mr-2 h-4 w-4" />

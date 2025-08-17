@@ -20,6 +20,7 @@ import SignupPage from "@/pages/signup";
 import HistoryPage from "@/pages/history";
 import WatchLater from "@/pages/watch-later";
 import Accounts from "@/pages/accounts";
+import Help from "@/pages/help";
 
 function ProtectedRoute({ component: Component, ...rest }: { component: React.ComponentType }) {
   const { isAuthenticated } = useAuth();
@@ -62,6 +63,7 @@ function Router() {
       <Route path="/history" component={() => <ProtectedRoute component={HistoryPage} />} />
       <Route path="/watch-later" component={() => <ProtectedRoute component={WatchLater} />} />
       <Route path="/accounts" component={Accounts} />
+      <Route path="/help" component={Help} />
       
       <Route component={NotFound} />
     </Switch>

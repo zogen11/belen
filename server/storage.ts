@@ -383,7 +383,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFollowers(userId: string): Promise<User[]> {
-    const result = await db
+    const result = await this.database
       .select({ user: users })
       .from(follows)
       .innerJoin(users, eq(follows.followerId, users.id))
@@ -393,7 +393,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFollowing(userId: string): Promise<User[]> {
-    const result = await db
+    const result = await this.database
       .select({ user: users })
       .from(follows)
       .innerJoin(users, eq(follows.followingId, users.id))
@@ -403,7 +403,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async isFollowing(followerId: string, followingId: string): Promise<boolean> {
-    const result = await db
+    const result = await this.database
       .select()
       .from(follows)
       .where(
@@ -973,12 +973,19 @@ export class MemStorage implements IStorage {
     const streamKey = `sk_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
     const stream: LiveStream = {
       id: randomUUID(),
-      ...data,
+      userId: data.userId,
+      title: data.title,
+      description: data.description || null,
+      thumbnailUrl: data.thumbnailUrl || null,
       streamKey,
       status: "setup",
       viewers: 0,
       maxViewers: 0,
       earnings: 0,
+      tags: [],
+      isMonetized: true,
+      chatEnabled: true,
+      donationsEnabled: true,
       startedAt: null,
       endedAt: null,
       createdAt: new Date(),

@@ -41,7 +41,6 @@ export default function ProfileEdit() {
     lastName: user?.lastName || '',
     username: user?.username || '',
     email: user?.email || '',
-    phone: user?.phone || '',
     description: user?.description || '',
     isPrivate: user?.isPrivate || false,
     allowComments: user?.allowComments !== false
@@ -136,19 +135,9 @@ export default function ProfileEdit() {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiRequest('/api/auth/update-profile', {
-        method: 'PUT',
-        body: JSON.stringify(data),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await apiRequest('PUT', '/api/auth/update-profile', data);
       
-      if (!response.ok) {
-        throw new Error('Failed to update profile');
-      }
-      
-      return response.json();
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });

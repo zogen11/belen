@@ -14,6 +14,10 @@ export default function SignupPage() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Get return URL from query parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const returnUrl = urlParams.get('return') || '/';
 
   const form = useForm<SignupData>({
     resolver: zodResolver(signupSchema),
@@ -47,8 +51,8 @@ export default function SignupPage() {
         description: "Your account has been created successfully.",
       });
       
-      // Navigate to home immediately
-      setLocation("/");
+      // Navigate to the return URL or home
+      setLocation(returnUrl);
     },
     onError: (error: any) => {
       toast({

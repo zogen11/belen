@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/auth-context";
 import { 
   Sparkles, 
   Radio, 
@@ -19,6 +20,17 @@ import {
 
 export default function WelcomeShowcase() {
   const [currentFeature, setCurrentFeature] = useState(0);
+  const [, setLocation] = useLocation();
+  const { user } = useAuth();
+
+  const handleFeatureClick = (link: string) => {
+    if (!user) {
+      // Redirect to signup with return URL
+      setLocation(`/signup?return=${encodeURIComponent(link)}`);
+    } else {
+      setLocation(link);
+    }
+  };
 
   const features = [
     {
@@ -135,12 +147,14 @@ export default function WelcomeShowcase() {
                     </li>
                   ))}
                 </ul>
-                <Link href={feature.link}>
-                  <Button className="w-full group" data-testid={`button-explore-${feature.id}`}>
-                    <span>Explore {feature.title}</span>
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
+                <Button 
+                  className="w-full group" 
+                  data-testid={`button-explore-${feature.id}`}
+                  onClick={() => handleFeatureClick(feature.link)}
+                >
+                  <span>{user ? `Explore ${feature.title}` : `Try ${feature.title}`}</span>
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
               </CardContent>
             </Card>
           );
@@ -155,24 +169,34 @@ export default function WelcomeShowcase() {
             Choose your path to content creation success
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/ai-studio">
-              <Button size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" data-testid="button-start-ai">
-                <Sparkles className="mr-2 h-5 w-5" />
-                Start with AI
-              </Button>
-            </Link>
-            <Link href="/live">
-              <Button size="lg" variant="outline" className="border-red-200 text-red-600 hover:bg-red-50" data-testid="button-go-live">
-                <Radio className="mr-2 h-5 w-5" />
-                Go Live Now
-              </Button>
-            </Link>
-            <Link href="/upload">
-              <Button size="lg" variant="outline" data-testid="button-upload-content">
-                <Camera className="mr-2 h-5 w-5" />
-                Upload Content
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700" 
+              data-testid="button-start-ai"
+              onClick={() => handleFeatureClick("/ai-studio")}
+            >
+              <Sparkles className="mr-2 h-5 w-5" />
+              {user ? "Start with AI" : "Try AI Studio"}
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-red-200 text-red-600 hover:bg-red-50" 
+              data-testid="button-go-live"
+              onClick={() => handleFeatureClick("/live")}
+            >
+              <Radio className="mr-2 h-5 w-5" />
+              {user ? "Go Live Now" : "Try Live Streaming"}
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              data-testid="button-upload-content"
+              onClick={() => handleFeatureClick("/upload")}
+            >
+              <Camera className="mr-2 h-5 w-5" />
+              {user ? "Upload Content" : "Try Upload"}
+            </Button>
           </div>
         </div>
       </div>

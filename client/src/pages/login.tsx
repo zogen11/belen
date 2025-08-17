@@ -15,6 +15,10 @@ export default function LoginPage() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Get return URL from query parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const returnUrl = urlParams.get('return') || '/';
 
   const form = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
@@ -48,8 +52,8 @@ export default function LoginPage() {
         description: "You've been logged in successfully.",
       });
       
-      // Navigate to home immediately
-      setLocation("/");
+      // Navigate to the return URL or home
+      setLocation(returnUrl);
     },
     onError: (error: any) => {
       toast({

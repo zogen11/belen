@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Search, Plus, Cast, Bell, LogOut, User, Users, Tv, Monitor, Smartphone, Wifi, Bot, Sparkles, MessageSquare, Image, Video, Wand2 } from "lucide-react";
+import { Search, Plus, Cast, Bell, LogOut, User, Users, Tv, Monitor, Smartphone, Wifi, Bot, Sparkles, MessageSquare, Image, Video, Wand2, Brain, Zap, Eye, Mic, Languages, TrendingUp, Target, Globe, Camera, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -158,48 +158,113 @@ export default function Header() {
                   <Bot className="w-6 h-6" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-72">
-                <DropdownMenuItem onClick={() => handleAIFeature('AI Content Generator')}>
-                  <Sparkles className="mr-2 h-4 w-4 text-purple-600" />
+              <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
+                {/* Advanced AI Creation Tools */}
+                <DropdownMenuItem onClick={() => handleAIFeature('Neural Content Generation')}>
+                  <Brain className="mr-2 h-4 w-4 text-purple-600" />
                   <div className="flex flex-col">
-                    <span>AI Content Generator</span>
-                    <span className="text-xs text-muted-foreground">Generate video ideas and scripts</span>
+                    <span>Neural Content Generation</span>
+                    <span className="text-xs text-muted-foreground">GPT-4 powered viral content creation</span>
                   </div>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleAIFeature('Smart Thumbnails')}>
-                  <Image className="mr-2 h-4 w-4 text-blue-600" />
-                  <div className="flex flex-col">
-                    <span>Smart Thumbnails</span>
-                    <span className="text-xs text-muted-foreground">AI-powered thumbnail creation</span>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleAIFeature('Auto Captions')}>
-                  <MessageSquare className="mr-2 h-4 w-4 text-green-600" />
-                  <div className="flex flex-col">
-                    <span>Auto Captions</span>
-                    <span className="text-xs text-muted-foreground">Generate subtitles automatically</span>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleAIFeature('Video Editor')}>
+                <DropdownMenuItem onClick={() => handleAIFeature('AI Video Synthesis')}>
                   <Video className="mr-2 h-4 w-4 text-red-600" />
                   <div className="flex flex-col">
-                    <span>AI Video Editor</span>
-                    <span className="text-xs text-muted-foreground">Smart editing and effects</span>
+                    <span>AI Video Synthesis</span>
+                    <span className="text-xs text-muted-foreground">Generate entire videos from text prompts</span>
                   </div>
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAIFeature('Deep Voice Cloning')}>
+                  <Mic className="mr-2 h-4 w-4 text-green-600" />
+                  <div className="flex flex-col">
+                    <span>Deep Voice Cloning</span>
+                    <span className="text-xs text-muted-foreground">Clone any voice with 3 seconds of audio</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAIFeature('Real-time Face Swap')}>
+                  <Eye className="mr-2 h-4 w-4 text-blue-600" />
+                  <div className="flex flex-col">
+                    <span>Real-time Face Swap</span>
+                    <span className="text-xs text-muted-foreground">Live deepfake technology for streaming</span>
+                  </div>
+                </DropdownMenuItem>
+                
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => handleAIFeature('Content Optimizer')}>
-                  <Wand2 className="mr-2 h-4 w-4 text-orange-600" />
+                
+                {/* Advanced Analytics & Optimization */}
+                <DropdownMenuItem onClick={() => handleAIFeature('Predictive Analytics')}>
+                  <TrendingUp className="mr-2 h-4 w-4 text-orange-600" />
                   <div className="flex flex-col">
-                    <span>Content Optimizer</span>
-                    <span className="text-xs text-muted-foreground">Improve engagement and reach</span>
+                    <span>Predictive Analytics</span>
+                    <span className="text-xs text-muted-foreground">Predict viral potential before posting</span>
                   </div>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleAIFeature('AI Assistant')}>
-                  <Bot className="mr-2 h-4 w-4 text-indigo-600" />
+                <DropdownMenuItem onClick={() => handleAIFeature('AI Audience Targeting')}>
+                  <Target className="mr-2 h-4 w-4 text-pink-600" />
                   <div className="flex flex-col">
-                    <span>AI Assistant</span>
-                    <span className="text-xs text-muted-foreground">Get personalized creator tips</span>
+                    <span>AI Audience Targeting</span>
+                    <span className="text-xs text-muted-foreground">Machine learning audience optimization</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAIFeature('Sentiment Analysis Engine')}>
+                  <Zap className="mr-2 h-4 w-4 text-yellow-600" />
+                  <div className="flex flex-col">
+                    <span>Sentiment Analysis Engine</span>
+                    <span className="text-xs text-muted-foreground">Real-time emotion detection in comments</span>
+                  </div>
+                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator />
+                
+                {/* Advanced Language & Translation */}
+                <DropdownMenuItem onClick={() => handleAIFeature('Neural Translation')}>
+                  <Languages className="mr-2 h-4 w-4 text-indigo-600" />
+                  <div className="flex flex-col">
+                    <span>Neural Translation</span>
+                    <span className="text-xs text-muted-foreground">Instant content translation to 100+ languages</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAIFeature('Global Trend Detection')}>
+                  <Globe className="mr-2 h-4 w-4 text-cyan-600" />
+                  <div className="flex flex-col">
+                    <span>Global Trend Detection</span>
+                    <span className="text-xs text-muted-foreground">AI-powered worldwide trend analysis</span>
+                  </div>
+                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator />
+                
+                {/* Advanced Media Generation */}
+                <DropdownMenuItem onClick={() => handleAIFeature('AI Music Composer')}>
+                  <Music className="mr-2 h-4 w-4 text-emerald-600" />
+                  <div className="flex flex-col">
+                    <span>AI Music Composer</span>
+                    <span className="text-xs text-muted-foreground">Generate original soundtracks and beats</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAIFeature('3D Scene Generator')}>
+                  <Camera className="mr-2 h-4 w-4 text-teal-600" />
+                  <div className="flex flex-col">
+                    <span>3D Scene Generator</span>
+                    <span className="text-xs text-muted-foreground">Create 3D environments from descriptions</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleAIFeature('Holographic Thumbnails')}>
+                  <Sparkles className="mr-2 h-4 w-4 text-violet-600" />
+                  <div className="flex flex-col">
+                    <span>Holographic Thumbnails</span>
+                    <span className="text-xs text-muted-foreground">Next-gen 3D interactive thumbnails</span>
+                  </div>
+                </DropdownMenuItem>
+                
+                <DropdownMenuSeparator />
+                
+                {/* Ultimate AI Assistant */}
+                <DropdownMenuItem onClick={() => handleAIFeature('AI Creator Genius')}>
+                  <Wand2 className="mr-2 h-4 w-4 text-gradient-to-r from-purple-600 to-pink-600" />
+                  <div className="flex flex-col">
+                    <span className="font-semibold">AI Creator Genius</span>
+                    <span className="text-xs text-muted-foreground">Ultimate AI assistant with GPT-4, DALL-E, and more</span>
                   </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>

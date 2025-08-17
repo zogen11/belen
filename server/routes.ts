@@ -70,7 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false, // Don't save empty sessions
     rolling: true,
     store: sessionStore,
     name: 'connect.sid',
@@ -129,8 +129,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastName: "",
       });
 
-      // Create session and save it
+      // Create session and save it with explicit logging
       req.session.userId = user.id;
+      console.log('Signup - Setting session userId:', user.id);
+      console.log('Signup - Session ID:', req.sessionID);
       
       // Save session before responding
       req.session.save((err) => {
@@ -138,6 +140,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error("Session save error:", err);
           return res.status(500).json({ error: "Session error" });
         }
+        
+        console.log('Signup - Session saved successfully for user:', user.id);
         
         // Return user without password
         const { password, ...userWithoutPassword } = user;
@@ -875,7 +879,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Live Streaming API Routes
   app.post("/api/live-streams", requireAuth, async (req, res) => {
     try {
+      console.log('Live stream creation request body:', JSON.stringify(req.body, null, 2));
       const validatedData = insertLiveStreamSchema.parse(req.body);
+      console.log('Live stream validated data:', JSON.stringify(validatedData, null, 2));
       const stream = await storage.createLiveStream({
         ...validatedData,
         userId: req.user!.id,
@@ -883,6 +889,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stream);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error('Live stream validation error:', error.errors);
         return res.status(400).json({ error: error.errors[0].message });
       }
       console.error("Create live stream error:", error);
@@ -915,7 +922,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         streams = await storage.getActiveLiveStreams(); // Default to active streams
       }
-      
       res.json(streams);
     } catch (error) {
       console.error("Get live streams error:", error);

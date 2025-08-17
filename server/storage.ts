@@ -651,12 +651,18 @@ export class MemStorage implements IStorage {
   private videos: Map<string, Video>;
   private shorts: Map<string, Shorts>;
   private photos: Map<string, Photo>;
+  private liveStreams: Map<string, LiveStream>;
+  private streamChats: Map<string, StreamChat>;
+  private streamViewers: Map<string, StreamViewer>;
 
   constructor() {
     this.users = new Map();
     this.videos = new Map();
     this.shorts = new Map();
     this.photos = new Map();
+    this.liveStreams = new Map();
+    this.streamChats = new Map();
+    this.streamViewers = new Map();
     
     // Initialize with sample data
     this.initializeSampleData();
@@ -962,41 +968,101 @@ export class MemStorage implements IStorage {
     return [];
   }
 
-  // Live streaming methods (stub implementations)
+  // Live streaming methods 
   async createLiveStream(data: InsertLiveStream & { userId: string }): Promise<LiveStream> {
-    throw new Error("Live streaming not available with memory storage");
+    const streamKey = `sk_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+    const stream: LiveStream = {
+      id: randomUUID(),
+      ...data,
+      streamKey,
+      status: "setup",
+      viewers: 0,
+      maxViewers: 0,
+      earnings: 0,
+      startedAt: null,
+      endedAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.liveStreams.set(stream.id, stream);
+    return stream;
   }
 
   async getLiveStream(id: string): Promise<LiveStream | undefined> {
-    return undefined;
+    return this.liveStreams.get(id);
   }
 
   async getUserLiveStreams(userId: string): Promise<LiveStream[]> {
-    return [];
+    return Array.from(this.liveStreams.values()).filter(stream => stream.userId === userId);
   }
 
   async getActiveLiveStreams(): Promise<LiveStream[]> {
-    return [];
+    return Array.from(this.liveStreams.values()).filter(stream => stream.status === "live");
   }
 
   async updateLiveStreamStatus(id: string, status: string, extraData?: Record<string, any>): Promise<LiveStream> {
-    throw new Error("Live streaming not available with memory storage");
+    const stream = this.liveStreams.get(id);
+    if (!stream) {
+      throw new Error("Stream not found");
+    }
+    
+    stream.status = status;
+    stream.updatedAt = new Date();
+    
+    if (status === "live" && !stream.startedAt) {
+      stream.startedAt = new Date();
+    } else if (status === "ended" && !stream.endedAt) {
+      stream.endedAt = new Date();
+    }
+    
+    if (extraData) {
+      Object.assign(stream, extraData);
+    }
+    
+    this.liveStreams.set(id, stream);
+    return stream;
   }
 
   async updateStreamViewers(id: string, viewers: number): Promise<void> {
-    // Not implemented in memory storage
+    const stream = this.liveStreams.get(id);
+    if (stream) {
+      stream.viewers = viewers;
+      if (viewers > stream.maxViewers) {
+        stream.maxViewers = viewers;
+      }
+      stream.updatedAt = new Date();
+      this.liveStreams.set(id, stream);
+    }
   }
 
   async addStreamChat(data: InsertStreamChat): Promise<StreamChat> {
-    throw new Error("Live streaming not available with memory storage");
+    const chat: StreamChat = {
+      id: randomUUID(),
+      ...data,
+      isSystemMessage: data.isSystemMessage || false,
+      createdAt: new Date(),
+    };
+    this.streamChats.set(chat.id, chat);
+    return chat;
   }
 
   async getStreamChats(streamId: string, limit?: number): Promise<StreamChat[]> {
-    return [];
+    const chats = Array.from(this.streamChats.values())
+      .filter(chat => chat.streamId === streamId)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    
+    return limit ? chats.slice(-limit) : chats;
   }
 
   async addStreamViewer(data: InsertStreamViewer): Promise<StreamViewer> {
-    throw new Error("Live streaming not available with memory storage");
+    const viewer: StreamViewer = {
+      id: randomUUID(),
+      ...data,
+      joinedAt: new Date(),
+      leftAt: null,
+    };
+    this.streamViewers.set(viewer.id, viewer);
+    return viewer;
   }
 
   async removeStreamViewer(streamId: string, sessionId: string): Promise<void> {

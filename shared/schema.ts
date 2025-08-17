@@ -270,6 +270,7 @@ export const insertEarningsHistorySchema = createInsertSchema(earningsHistory).o
 // Live streaming schemas
 export const insertLiveStreamSchema = createInsertSchema(liveStreams).omit({
   id: true,
+  userId: true, // Will be set from authenticated user
   streamKey: true,
   status: true,
   viewers: true,
@@ -279,6 +280,10 @@ export const insertLiveStreamSchema = createInsertSchema(liveStreams).omit({
   endedAt: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  thumbnailUrl: z.string().optional(),
+  description: z.string().optional(),
+  isMonetized: z.boolean().optional(),
 });
 
 export const insertStreamChatSchema = createInsertSchema(streamChats).omit({

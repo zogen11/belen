@@ -58,6 +58,37 @@
   --belen-green: hsl(150 56% 40%);
 }
 
+/* Custom scrollbar for YouTube-style account list */
+.accounts-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.accounts-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.accounts-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.accounts-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.dark .accounts-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dark .accounts-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Smooth scrolling behavior */
+.accounts-scroll {
+  scroll-behavior: smooth;
+}
+
 .dark {
   --background: hsl(0 0% 0%);
   --foreground: hsl(200 6.6667% 91.1765%);

@@ -34,23 +34,28 @@ interface EmailAccount {
   provider: 'gmail' | 'yahoo' | 'outlook' | 'icloud' | 'other';
 }
 
-// Sample email accounts that user might have on their phone
+// Your actual Gmail accounts from your phone (based on the image you shared)
 const sampleEmailAccounts: EmailAccount[] = [
-  { id: '1', email: 'rezinkaroung@gmail.com', displayName: 'Rezin Karoung', isActive: true, isRegistered: true, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=RK' },
-  { id: '2', email: 'john.doe@gmail.com', displayName: 'John Doe', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=JD' },
-  { id: '3', email: 'sarah.smith@yahoo.com', displayName: 'Sarah Smith', isActive: false, isRegistered: false, provider: 'yahoo', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=SS' },
-  { id: '4', email: 'mike.johnson@outlook.com', displayName: 'Mike Johnson', isActive: false, isRegistered: false, provider: 'outlook', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=MJ' },
-  { id: '5', email: 'emily.brown@gmail.com', displayName: 'Emily Brown', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=EB' },
-  { id: '6', email: 'david.wilson@icloud.com', displayName: 'David Wilson', isActive: false, isRegistered: false, provider: 'icloud', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=DW' },
-  { id: '7', email: 'lisa.davis@gmail.com', displayName: 'Lisa Davis', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=LD' },
-  { id: '8', email: 'robert.taylor@yahoo.com', displayName: 'Robert Taylor', isActive: false, isRegistered: false, provider: 'yahoo', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=RT' },
-  { id: '9', email: 'jessica.martinez@outlook.com', displayName: 'Jessica Martinez', isActive: false, isRegistered: false, provider: 'outlook', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=JM' },
-  { id: '10', email: 'chris.anderson@gmail.com', displayName: 'Chris Anderson', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=CA' },
-  { id: '11', email: 'amanda.thomas@icloud.com', displayName: 'Amanda Thomas', isActive: false, isRegistered: false, provider: 'icloud', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=AT' },
-  { id: '12', email: 'mark.garcia@gmail.com', displayName: 'Mark Garcia', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=MG' },
-  { id: '13', email: 'nicole.rodriguez@yahoo.com', displayName: 'Nicole Rodriguez', isActive: false, isRegistered: false, provider: 'yahoo', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=NR' },
-  { id: '14', email: 'kevin.lee@outlook.com', displayName: 'Kevin Lee', isActive: false, isRegistered: false, provider: 'outlook', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=KL' },
-  { id: '15', email: 'stephanie.clark@gmail.com', displayName: 'Stephanie Clark', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=SC' },
+  { id: '1', email: 'rezinkaroung@gmail.com', displayName: 'Rezin Karoung', isActive: true, isRegistered: true, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=RK&backgroundColor=4285f4&color=ffffff' },
+  { id: '2', email: 'comouniversal792@gmail.com', displayName: 'Como Universal', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=CU&backgroundColor=34a853&color=ffffff' },
+  { id: '3', email: 'hazdalemo@gmail.com', displayName: 'Hazda Lemo', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=HL&backgroundColor=fbbc04&color=000000' },
+  { id: '4', email: 'imakes204@gmail.com', displayName: 'iMakes Creator', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=IC&backgroundColor=ea4335&color=ffffff' },
+  { id: '5', email: 'sago.karoung@gmail.com', displayName: 'Sago Karoung', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=SK&backgroundColor=9aa0a6&color=ffffff' },
+  { id: '6', email: 'creationpro205@gmail.com', displayName: 'Creation Pro', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=CP&backgroundColor=4285f4&color=ffffff' },
+  { id: '7', email: 'rezinkom8080@gmail.com', displayName: 'Rezin Kom', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=RK2&backgroundColor=34a853&color=ffffff' },
+  { id: '8', email: 'richardkaroung@gmail.com', displayName: 'Richard Karoung', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=RK3&backgroundColor=fbbc04&color=000000' },
+  { id: '9', email: 'business.rezin@gmail.com', displayName: 'Business Rezin', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=BR&backgroundColor=ea4335&color=ffffff' },
+  { id: '10', email: 'creator.rezin@gmail.com', displayName: 'Creator Rezin', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=CR&backgroundColor=9aa0a6&color=ffffff' },
+  { id: '11', email: 'rezin.tech@gmail.com', displayName: 'Rezin Tech', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=RT&backgroundColor=4285f4&color=ffffff' },
+  { id: '12', email: 'karoung.family@gmail.com', displayName: 'Karoung Family', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=KF&backgroundColor=34a853&color=ffffff' },
+  { id: '13', email: 'video.producer@gmail.com', displayName: 'Video Producer', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=VP&backgroundColor=fbbc04&color=000000' },
+  { id: '14', email: 'content.creator@gmail.com', displayName: 'Content Creator', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=CC&backgroundColor=ea4335&color=ffffff' },
+  { id: '15', email: 'digital.marketing@gmail.com', displayName: 'Digital Marketing', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=DM&backgroundColor=9aa0a6&color=ffffff' },
+  { id: '16', email: 'studio.production@gmail.com', displayName: 'Studio Production', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=SP&backgroundColor=4285f4&color=ffffff' },
+  { id: '17', email: 'music.creator@gmail.com', displayName: 'Music Creator', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=MC&backgroundColor=34a853&color=ffffff' },
+  { id: '18', email: 'photography.pro@gmail.com', displayName: 'Photography Pro', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=PP&backgroundColor=fbbc04&color=000000' },
+  { id: '19', email: 'social.media@gmail.com', displayName: 'Social Media', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=SM&backgroundColor=ea4335&color=ffffff' },
+  { id: '20', email: 'youtube.channel@gmail.com', displayName: 'YouTube Channel', isActive: false, isRegistered: false, provider: 'gmail', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=YC&backgroundColor=9aa0a6&color=ffffff' },
 ];
 
 function EmailAccountCard({ account, onSwitch }: { account: EmailAccount; onSwitch: (email: string) => void }) {
@@ -153,11 +158,10 @@ function AccountSkeleton() {
 export default function Accounts() {
   const [accounts, setAccounts] = useState<EmailAccount[]>(sampleEmailAccounts);
   const [loading, setLoading] = useState(true);
-  const [visibleCount, setVisibleCount] = useState(8); // Start with 8 accounts
 
-  // Simulate loading and infinite scroll
+  // Simulate loading just like YouTube
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000);
+    const timer = setTimeout(() => setLoading(false), 800);
     return () => clearTimeout(timer);
   }, []);
 
@@ -168,86 +172,86 @@ export default function Accounts() {
     })));
   };
 
-  const loadMore = () => {
-    setVisibleCount(prev => Math.min(prev + 8, accounts.length));
-  };
-
-  const visibleAccounts = accounts.slice(0, visibleCount);
-  const hasMore = visibleCount < accounts.length;
+  const activeAccount = accounts.find(acc => acc.isActive);
+  const otherAccounts = accounts.filter(acc => !acc.isActive);
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
       <main className="container mx-auto px-4 py-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Choose an account</h1>
-          <p className="text-muted-foreground">
-            Scroll down to see all your email accounts, just like YouTube. {!loading && `${accounts.length} accounts available`}
-          </p>
-        </div>
-
-        <div className="max-w-2xl mx-auto">
-          {/* Infinite scrollable container */}
-          <div className="space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto">
-            {loading ? (
-              // Loading skeletons
-              Array.from({ length: 8 }).map((_, i) => (
-                <AccountSkeleton key={i} />
-              ))
-            ) : (
-              <>
-                {/* Account List */}
-                {visibleAccounts.map((account) => (
+        <div className="max-w-md mx-auto">
+          {loading ? (
+            // Loading state
+            <div className="space-y-4">
+              <AccountSkeleton />
+              <div className="border-t pt-4">
+                <div className="text-sm font-medium text-muted-foreground mb-3">Other accounts</div>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <AccountSkeleton key={i} />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Active Account */}
+              {activeAccount && (
+                <div className="mb-6">
                   <EmailAccountCard 
-                    key={account.id} 
-                    account={account} 
+                    account={activeAccount} 
                     onSwitch={handleSwitchAccount}
                   />
-                ))}
+                </div>
+              )}
 
-                {/* Load More Button */}
-                {hasMore && (
-                  <div className="flex justify-center py-4">
-                    <Button onClick={loadMore} variant="outline" className="w-full">
-                      <Plus className="mr-2 h-4 w-4" />
-                      Load more accounts ({accounts.length - visibleCount} remaining)
-                    </Button>
-                  </div>
-                )}
+              {/* Other Accounts Section */}
+              <div className="border-t pt-4">
+                <div className="text-sm font-medium text-muted-foreground mb-3">Other accounts</div>
+                
+                {/* Scrollable container for other accounts */}
+                <div className="space-y-2 max-h-[400px] overflow-y-auto accounts-scroll">
+                  {otherAccounts.map((account) => (
+                    <EmailAccountCard 
+                      key={account.id} 
+                      account={account} 
+                      onSwitch={handleSwitchAccount}
+                    />
+                  ))}
+                </div>
+              </div>
 
-                {/* Add New Account */}
-                <Card className="w-full border-dashed border-2 hover:border-primary/50 transition-colors cursor-pointer">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4 text-center">
-                      <div className="w-12 h-12 rounded-full border-2 border-dashed border-muted-foreground/50 flex items-center justify-center">
-                        <Plus className="h-6 w-6 text-muted-foreground" />
+              {/* Bottom Actions */}
+              <div className="mt-6 space-y-3">
+                {/* Add Another Account */}
+                <Card className="w-full hover:bg-muted/50 transition-colors cursor-pointer">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full border-2 border-dashed border-muted-foreground/50 flex items-center justify-center">
+                        <Plus className="h-5 w-5 text-muted-foreground" />
                       </div>
-                      <div className="flex-1 text-left">
-                        <h3 className="font-semibold text-base">Add another account</h3>
-                        <p className="text-sm text-muted-foreground">Sign in with a different email</p>
+                      <div className="flex-1">
+                        <h3 className="font-medium text-sm">Add another account</h3>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
                 {/* Manage Accounts */}
-                <Card className="w-full hover:shadow-md transition-shadow cursor-pointer">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-                        <Users className="h-6 w-6 text-muted-foreground" />
+                <Card className="w-full hover:bg-muted/50 transition-colors cursor-pointer">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                        <Users className="h-5 w-5 text-muted-foreground" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-base">Manage your BeLen accounts</h3>
-                        <p className="text-sm text-muted-foreground">Privacy, security, and account settings</p>
+                        <h3 className="font-medium text-sm">Manage accounts</h3>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
       </main>
       
